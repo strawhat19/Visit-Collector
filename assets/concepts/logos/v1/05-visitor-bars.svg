@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc"><title id="title">Visit Collector — Visitor Bars</title><desc id="desc">Three visitors become rising dashboard bars, gathered in a shared collection tray.</desc><rect width="1024" height="1024" fill="#F8FAFC"/>
+<g fill="#162C46">
+<circle cx="352" cy="406" r="45"/>
+<rect x="302" y="474" width="100" height="168" rx="50"/>
+<circle cx="672" cy="348" r="45"/>
+<rect x="622" y="416" width="100" height="226" rx="50"/>
+</g>
+<g fill="#28C7AE"><circle cx="512" cy="268" r="45"/><rect x="462" y="336" width="100" height="306" rx="50"/></g>
+<path d="M240 568V636C240 706.692 297.308 764 368 764H656C726.692 764 784 706.692 784 636V568" fill="none" stroke="#162C46" stroke-width="52" stroke-linecap="round"/>
+</svg>

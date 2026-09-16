@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">Visit Collector — Balanced primary</title>
+<desc id="desc">A refined black C collects a blue and green V-shaped visitor, yellow head, and red arrival dot. Carefully balanced strokes and spacing preserve readability at small sizes. Icon only.</desc>
+<defs><clipPath id="green-arm"><rect x="512" y="390" width="230" height="340"/></clipPath></defs>
+<rect width="1024" height="1024" fill="#F8FAFC"/>
+<g data-role="vc-monogram">
+<path data-role="collector-c" d="M697.78620637 344.71734841A250 250 0 1 0 697.78620637 679.28265159" fill="none" stroke="#15191F" stroke-width="80" stroke-linecap="round"/>
+<path data-role="visitor-v" d="M402 463L512 626L622 463" fill="none" stroke="#2563EB" stroke-width="68" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M402 463L512 626L622 463" fill="none" stroke="#159A63" stroke-width="68" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#green-arm)"/>
+<circle data-role="visitor-head" cx="512" cy="366" r="32" fill="#F4C542"/>
+<circle data-role="arrival-dot" cx="756" cy="512" r="36" fill="#E44747"/>
+</g></svg>

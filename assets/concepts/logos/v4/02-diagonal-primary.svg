@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">Visit Collector — Diagonal primary</title>
+<desc id="desc">A slender multicolor C with crisp separated color sections surrounds a multicolor V with true negative-space splits. Black and yellow dots keep the visitor and arrival symbols simple. Original VC identity with more internal space. Icon only.</desc>
+<rect width="1024" height="1024" fill="#F8FAFC"/>
+<g data-role="collector-c"><path d="M697.78620637 344.71734841A250 250 0 0 0 340.70425242 329.90725753" fill="none" stroke="#E44747" stroke-width="64"/><path d="M329.90725753 340.70425242A250 250 0 0 0 329.90725753 683.29574758" fill="none" stroke="#2563EB" stroke-width="64"/><path d="M340.70425242 694.09274247A250 250 0 0 0 697.78620637 679.28265159" fill="none" stroke="#159A63" stroke-width="64"/><circle cx="697.78620637" cy="344.71734841" r="32.0" fill="#E44747"/><circle cx="697.78620637" cy="679.28265159" r="32.0" fill="#159A63"/></g><g data-role="visitor-v">
+<path d="M408 464L482.88 577.76" fill="none" stroke="#2563EB" stroke-width="56"/>
+<circle cx="408" cy="464" r="28" fill="#2563EB"/>
+<path d="M489.12 587.24L512 622L616 464" fill="none" stroke="#159A63" stroke-width="56" stroke-linejoin="round"/>
+<circle cx="616" cy="464" r="28" fill="#159A63"/>
+</g>
+<circle data-role="visitor-head" cx="512" cy="365" r="30" fill="#F4C542"/>
+<circle data-role="arrival-dot" cx="754" cy="512" r="30" fill="#15191F"/>
+</svg>

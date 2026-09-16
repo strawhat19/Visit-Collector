@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">Visit Collector — Black and red</title>
+<desc id="desc">Refined VC monogram: a rounded C surrounds a V-shaped visitor and head dot. A separate arrival dot sits in the C opening. Balanced stroke weights and generous internal spacing. Icon only.</desc>
+<rect width="1024" height="1024" fill="#F8FAFC"/>
+<g data-role="monogram">
+<path data-role="collector-c" d="M691.834950 338.335407A250 250 0 1 0 691.834950 685.664593" fill="none" stroke="#15191F" stroke-width="88" stroke-linecap="round"/>
+<path data-role="visitor-v" d="M410 461L512 630L614 461" fill="none" stroke="#E44747" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+<circle data-role="visitor-head" cx="512" cy="364" r="34" fill="#E44747"/>
+<circle data-role="arrival-dot" cx="754" cy="512" r="40" fill="#E44747"/>
+</g></svg>
