@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Visit Collector",
+    "slug": "visit-collector",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icons/app-icon.png",
+    "plugins": [["expo-location", {
+      "motionUsagePermission": false,
+      "locationAlwaysPermission": false,
+      "locationAlwaysAndWhenInUsePermission": false,
+      "locationWhenInUsePermission": "Allow Visit Collector to place your location on your local map and globe"
+    }]],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.strawhat19.visitcollector"
+    },
+    "android": {
+      "package": "com.strawhat19.visitcollector",
+      "adaptiveIcon": {
+        "backgroundColor": "#00000000",
+        "foregroundImage": "./assets/icons/adaptive-icon.png"
+      }
+    },
+    "web": {
+      "output": "single",
+      "bundler": "metro",
+      "name": "Visit Collector",
+      "favicon": "./assets/icons/favicon.png"
+    }
+  }
+}

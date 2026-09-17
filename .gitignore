@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.expo/
+.codex-tmp/
+.vercel/
+coverage/
+web-build/
+*.tsbuildinfo
+.env*.local
+android/
+ios/

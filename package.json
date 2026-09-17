@@ -1,0 +1,48 @@
+{
+  "name": "visit-collector",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --lan",
+    "web": "expo start --web",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "typecheck": "tsc --noEmit",
+    "build": "expo export --platform web",
+    "test": "tsx --test src/state/*.test.ts"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.15",
+    "@noble/hashes": "^2.4.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-three/fiber": "^9.7.0",
+    "expo": "~57.0.23",
+    "expo-asset": "~57.0.16",
+    "expo-crypto": "~57.0.3",
+    "expo-file-system": "~57.0.6",
+    "expo-gl": "~57.0.2",
+    "expo-haptics": "~57.0.3",
+    "expo-location": "~57.0.18",
+    "expo-status-bar": "~57.0.1",
+    "lucide-react-native": "^1.47.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "^0.21.2",
+    "sass": "^1.104.1",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "~19.2.2",
+    "@types/three": "^0.183.1",
+    "tsx": "^4.20.6",
+    "typescript": "~6.0.3"
+  },
+  "engines": {
+    "node": "^20.19.4 || ^22.13.0 || >=24.3.0"
+  }
+}

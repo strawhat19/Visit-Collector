@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "types": ["react", "node"],
+    "ignoreDeprecations": "6.0"
+  },
+  "exclude": ["node_modules", "dist", ".codex-tmp", "assets/concepts"]
+}

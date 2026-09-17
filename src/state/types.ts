@@ -1,0 +1,57 @@
+export type DataMode = `local` | `demo`;
+export type LocalUser = { id: string; email: string; number: number; username: string };
+export type Preferences = { haptics: boolean; reducedMotion: boolean; theme: `light` | `dark` | `system` };
+export type LocationInput = { name: string; latitude: number; longitude: number };
+export type Activity = { at: number; id: string; path: string; source: string; sessionId?: string; countryCode: string; visitorKey?: string; type: `visit` | `page`; ipAddress?: string | null };
+export type AnalyticsSnapshot = {
+  online: number;
+  visitors: number;
+  pageViews: number;
+  updatedAt: number;
+  bounceRate: number;
+  uniqueViews: number;
+  totalVisits: number;
+  avgDuration: number;
+  activity: Activity[];
+  signedUpUsers: number;
+  savedLocations: number;
+  uniqueVisits: Activity[];
+  devices: Array<{ name: string; count: number }>;
+  browsers: Array<{ name: string; count: number }>;
+  buckets: Array<{ label: string; value: number }>;
+  userBuckets: Array<{ label: string; value: number }>;
+  operatingSystems: Array<{ name: string; count: number }>;
+  sources: Array<{ name: string; count: number; percent: number }>;
+  countries: Array<{ code: string; name: string; count: number; latitude: number | null; longitude: number | null }>;
+};
+
+export type PasswordVerifier = { salt: string; hash: string; iterations: number };
+export type LocalAccount = LocalUser & { createdAt?: number; verifier: PasswordVerifier };
+export type StoredLocation = LocationInput & { id: string; ownerKey: string; createdAt: number };
+export type VisitSession = {
+  id: string;
+  pages: number;
+  device: string;
+  source: string;
+  active: boolean;
+  browser: string;
+  activeMs: number;
+  lastSeen: number;
+  startedAt: number;
+  visitorKey: string;
+  countryCode: string;
+  operatingSystem?: string;
+  ipAddress?: string | null;
+};
+export type StoredCollector = {
+  version: 1;
+  revision: number;
+  nextNumber: number;
+  activity: Activity[];
+  userId: string | null;
+  preferences: Preferences;
+  accounts: LocalAccount[];
+  sessions: VisitSession[];
+  locations: StoredLocation[];
+  locationAssignments: Record<string, string>;
+};
