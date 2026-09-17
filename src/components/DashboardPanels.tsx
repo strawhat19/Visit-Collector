@@ -49,8 +49,13 @@ export const CountryRows = ({ countries, palette, selected, onSelect, limit = 3 
   const scope = useId();
   return <View {...elementProps(`country-rows`, scope)} style={{ paddingBottom: 5, paddingHorizontal: 18 }}>
     {(countries.length ? countries : [{ code: `--`, name: `No Visits Yet`, count: 0, latitude: null, longitude: null }]).slice(0, limit).map(country => <Pressable key={country.code} {...elementProps(`country-row`, `${scope}-${country.code}`)} accessibilityRole={`button`} accessibilityLabel={`${country.name}: ${country.count} Visit(s)`} aria-pressed={selected === country.code} accessibilityState={{ selected: selected === country.code }} onPress={() => onSelect(country.code)}
-      style={[styles.countryRow, { borderTopColor: palette.border, backgroundColor: selected === country.code ? palette.selected : `transparent` }]}>
-      <View {...elementProps(`country-code-badge`, `${scope}-${country.code}`)} style={[styles.countryCode, { backgroundColor: palette.raised }]}>{country.code === `unknown` || country.code === `--` ? <Text {...elementProps(`country-unknown-label`, `${scope}-${country.code}`)} style={[styles.tiny, { color: palette.muted }]}>—</Text> : country.code.length === 2 ? <Text {...elementProps(`country-code-label`, `${scope}-${country.code}`)} style={[styles.tiny, { color: palette.muted, fontWeight: `600` }]}>{country.code.toUpperCase()}</Text> : <MapPin {...elementProps(`country-location-icon`, `${scope}-${country.code}`)} size={15} color={palette.muted} strokeWidth={1.8} />}</View>
+      style={[styles.countryRow, { borderTopColor: palette.border }]}>
+      <View
+        style={styles.countryCode}
+        {...elementProps(`country-code-badge`, `${scope}-${country.code}`)}
+      >
+        {country.code === `unknown` || country.code === `--` ? <Text {...elementProps(`country-unknown-label`, `${scope}-${country.code}`)} style={[styles.tiny, { color: palette.muted }]}>—</Text> : country.code.length === 2 ? <Text {...elementProps(`country-code-label`, `${scope}-${country.code}`)} style={[styles.tiny, { color: palette.muted, fontWeight: `600` }]}>{country.code.toUpperCase()}</Text> : <MapPin {...elementProps(`country-location-icon`, `${scope}-${country.code}`)} size={15} color={palette.muted} strokeWidth={1.8} />}
+      </View>
       <Text {...elementProps(`country-name`, `${scope}-${country.code}`)} numberOfLines={1} style={[styles.countryName, { color: palette.text }]}>{country.name}</Text><Text {...elementProps(`country-visit-count`, `${scope}-${country.code}`)} style={[styles.countryCount, { color: palette.text }]}>{numberLabel(country.count)}</Text>
     </Pressable>)}
   </View>;

@@ -37,11 +37,31 @@ const CategoryCard = ({ title, icon: Icon, items, palette, compact, reducedMotio
   const total = items.reduce((sum, item) => sum + item.count, 0);
   const buckets = items.map(item => ({ label: item.name, value: item.count }));
   return <Card id={scope} palette={palette} className={`analytics-category-card`} style={[styles.card, compact && styles.compactCard]}>
-    <View {...elementProps(`analytics-category-heading`, scope)} style={styles.heading}>
-      <Icon {...elementProps(`analytics-category-icon`, scope)} size={compact ? 14 : 16} color={palette.blue} strokeWidth={1.8} />
-      <Text {...elementProps(`analytics-category-title`, scope)} numberOfLines={2} style={[styles.title, compact && styles.compactTitle, { color: palette.text }]}>{title}</Text>
+    <View {...elementProps(`analytics-category-header`, scope)} style={styles.categoryHeader}>
+      <View {...elementProps(`analytics-category-heading`, scope)} style={styles.heading}>
+        <Icon
+          size={compact ? 14 : 16}
+          color={palette.blue}
+          strokeWidth={1.8}
+          {...elementProps(`analytics-category-icon`, scope)}
+        />
+        <Text
+          numberOfLines={2}
+          {...elementProps(`analytics-category-title`, scope)}
+          style={[styles.title, compact && styles.compactTitle, { color: palette.text }]}
+        >
+          {title}
+        </Text>
+      </View>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        {...elementProps(`analytics-category-total`, scope)}
+        style={[styles.summary, { color: palette.muted }]}
+      >
+        {total.toLocaleString(`en-US`)} Visit(s)
+      </Text>
     </View>
-    <Text {...elementProps(`analytics-category-total`, scope)} numberOfLines={1} style={[styles.summary, { color: palette.muted }]}>{total.toLocaleString(`en-US`)} Visit(s)</Text>
     <TrafficChart dense title={title} scope={`Visit(s)`} unit={`Visit(s)`} buckets={buckets} palette={palette} variant={`category`} onFeedback={onFeedback} reducedMotion={reducedMotion} />
   </Card>;
 };
@@ -63,7 +83,9 @@ export const AnalyticsGrid = ({ data, palette, mode, compact, reducedMotion, onF
           </Pressable>)}
         </View>
         <View {...elementProps(`analytics-timeline-summary`, scope)} style={styles.summaryRow}>
-          <Text {...elementProps(`analytics-timeline-total`, scope)} numberOfLines={1} adjustsFontSizeToFit style={[styles.total, { color: palette.text }]}>{total.toLocaleString(`en-US`)} {users ? `Signups` : `Visits`}</Text>
+          <Text {...elementProps(`analytics-timeline-total`, scope)} numberOfLines={1} adjustsFontSizeToFit style={[styles.total, { color: palette.text }]}>
+            {total.toLocaleString(`en-US`)} {users ? `Signups` : `Visits`}
+          </Text>
           <Text {...elementProps(`analytics-timeline-period`, scope)} style={[styles.period, { color: palette.muted }]}>{mode === `demo` ? `Demo · 1h` : `Last Hour`}</Text>
         </View>
         <TrafficChart dense buckets={buckets} palette={palette} variant={`timeline`} scope={`Last Hour · 5-Minute Bins`} title={users ? `Users` : `Visits`} unit={users ? `Signup(s)` : `Visit(s)`} onFeedback={onFeedback} reducedMotion={reducedMotion} />
@@ -84,12 +106,13 @@ const styles = StyleSheet.create({
   grid: { gap: 8, flex: 1, minHeight: 304 },
   card: { flex: 1, minWidth: 0, padding: 12 },
   tabLabel: { fontSize: 11, fontWeight: `600` },
+  summary: { fontSize: 10, flexShrink: 1, lineHeight: 14 },
   total: { fontSize: 11, flexShrink: 1, fontWeight: `600` },
   row: { gap: 8, flex: 1, minHeight: 148, flexDirection: `row` },
   title: { flex: 1, fontSize: 13, lineHeight: 15, fontWeight: `600` },
-  summary: { fontSize: 10, lineHeight: 14, marginTop: 4, marginBottom: 2 },
-  heading: { gap: 6, minHeight: 32, flexDirection: `row`, alignItems: `center` },
   tabs: { gap: 2, padding: 2, borderWidth: 1, borderRadius: 7, flexDirection: `row` },
+  categoryHeader: { gap: 6, minHeight: 32, flexDirection: `row`, alignItems: `center` },
+  heading: { gap: 6, flex: 1, minWidth: 0, flexDirection: `row`, alignItems: `center` },
   summaryRow: { gap: 4, minHeight: 20, flexDirection: `row`, alignItems: `center`, justifyContent: `space-between` },
   tab: { gap: 4, flex: 1, minWidth: 0, minHeight: 26, borderRadius: 4, paddingHorizontal: 3, flexDirection: `row`, alignItems: `center`, justifyContent: `center` },
 });

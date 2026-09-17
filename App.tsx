@@ -130,7 +130,31 @@ const Collector = () => {
   const geography = <Card id={`locations`} className={`locations-card`} palette={palette} style={styles.geoCard}>
     <View {...elementProps(`app-geo-header`)} style={[styles.geoHeader, compact && { padding: 12 }]}>
       <View {...elementProps(`app-locations-title`)} style={styles.locationsTitle}>
-        <Pressable {...elementProps(`locations-open-button`)} accessibilityRole={`button`} accessibilityLabel={`View All Locations`} onPress={() => setCountriesOpen(true)} style={styles.inline}><MapPin {...elementProps(`app-map-pin-icon`)} size={15} color={palette.muted} /><Text {...elementProps(`app-card-title-text`)} style={[styles.cardTitle, { color: palette.text }]}>Locations</Text><Text {...elementProps(`locations-count`)} style={[styles.secondary, { color: palette.muted }]}> · {data.countries.length}</Text></Pressable>
+        <Pressable
+          style={styles.inline}
+          accessibilityRole={`button`}
+          onPress={() => setCountriesOpen(true)}
+          accessibilityLabel={`View All Locations`}
+          {...elementProps(`locations-open-button`)}
+        >
+          <MapPin
+            size={15}
+            color={palette.blue}
+            {...elementProps(`app-map-pin-icon`)}
+          />
+          <Text
+            {...elementProps(`app-card-title-text`)}
+            style={[styles.cardTitle, { color: palette.text }]}
+          >
+            Locations
+          </Text>
+          <Text
+            {...elementProps(`locations-count`)}
+            style={[styles.secondary, { color: palette.muted }]}
+          >
+             · {data.countries.length}
+          </Text>
+        </Pressable>
         <Pressable {...elementProps(`app-add-location-button`)} accessibilityRole={`button`} accessibilityLabel={`Add Your Location`} onPress={() => { feedback(); setLocationOpen(true); }} style={[styles.addLocation, { borderColor: palette.border, backgroundColor: palette.raised }]}><MapPin {...elementProps(`app-map-pin-icon`, 2)} size={14} color={palette.blue} /><Text {...elementProps(`app-add-your-location`)} style={{ color: palette.blue, fontSize: 12, fontWeight: `500` }}>Add Your Location</Text></Pressable>
       </View>
       <Segmented id={`locations-view`} stretch options={geoTabs} value={geoMode} palette={palette} small={compact} onChange={value => { feedback(); setGeoMode(value); }} />

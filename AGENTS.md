@@ -1,7 +1,7 @@
 # Visit Collector — AI Instructions
 
 1. When making code changes,
-Never verify or test or build the code, 
+dont verify or test or build the code, 
 just make minimal code changes and let the user look at the code diff and verify themselves before they commit.
 
 2. Always try your best to structure code and imports like this:
@@ -22,3 +22,20 @@ User should be able to inspect any element and see its class and then give that 
 5. when making buttons or clickable items, try your best to put icon text together. or icon only.
 
 6. when making transitions, always prefer smooth transitions over flat static transitions.
+
+7. prefer to break things out to make them more readable, like instead of:
+
+<Text style={[styles.tabLabel, { color: timelineMode === value ? palette.blue : palette.muted }]} {...elementProps(`analytics-timeline-tab-label`, `${scope}-${value}`)}>{label}</Text>
+
+prefer like this
+
+<Text 
+    {...elementProps(`analytics-timeline-tab-label`, `${scope}-${value}`)} 
+    style={[styles.tabLabel, { color: timelineMode === value ? palette.blue : palette.muted }]}
+>
+    {label}
+</Text>
+
+8. in javascript or typescript or tsx or jsx, always use backticks whenever possible, if not then use single quotes, and double quotes as a last resort.
+
+9. when there is a row with space on the side, and an element below it with space on the side, prefer to put those on the same row if they are related.

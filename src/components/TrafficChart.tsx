@@ -1,4 +1,5 @@
 import type { Palette } from '../ui/theme';
+import PlatformIcon from './PlatformIcon';
 import { elementProps } from '../ui/elementProps';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { memo, useId, useEffect, useRef, useState } from 'react';
@@ -39,7 +40,26 @@ const CategoryBar = memo(({ label, value, total, palette, reducedMotion, unit, s
     return () => animation.stop();
   }, [animated, percent, reducedMotion]);
   return <Pressable {...elementProps(`category-bar-button`, identity)} accessibilityRole={`button`} accessibilityLabel={`${label}: ${value} ${unit}, ${Math.round(percent)}%`} aria-pressed={selected} accessibilityState={{ selected }} onPress={onSelect} style={({ pressed }) => [styles.categoryRow, dense && styles.denseCategoryRow, { opacity: pressed ? 0.65 : 1 }]}>
-    <View {...elementProps(`category-bar-label-row`, identity)} style={[styles.categoryLabel, dense && { gap: 6 }]}><Text {...elementProps(`category-bar-name`, identity)} numberOfLines={1} style={[styles.categoryName, dense && styles.denseCategoryName, { color: selected ? palette.blue : palette.text }]}>{label}</Text><Text {...elementProps(`category-bar-count`, identity)} numberOfLines={1} style={[styles.categoryCount, dense && styles.denseText, { color: palette.muted }]}>{dense ? value.toLocaleString(`en-US`) : `${value.toLocaleString(`en-US`)} · ${Math.round(percent)}%`}</Text></View>
+    <View
+      {...elementProps(`category-bar-label-row`, identity)}
+      style={[styles.categoryLabel, dense && { gap: 6 }]}
+    >
+      <PlatformIcon name={label} color={palette.blue} size={dense ? 14 : 18} />
+      <Text
+        numberOfLines={1}
+        {...elementProps(`category-bar-name`, identity)}
+        style={[styles.categoryName, dense && styles.denseCategoryName, { color: selected ? palette.blue : palette.text }]}
+      >
+        {label}
+      </Text>
+      <Text
+        numberOfLines={1}
+        {...elementProps(`category-bar-count`, identity)}
+        style={[styles.categoryCount, dense && styles.denseText, { color: palette.muted }]}
+      >
+        {dense ? value.toLocaleString(`en-US`) : `${value.toLocaleString(`en-US`)} · ${Math.round(percent)}%`}
+      </Text>
+    </View>
     <View {...elementProps(`category-bar-track`, identity)} style={[styles.track, dense && { height: 4 }, { backgroundColor: palette.raised }]}><Animated.View {...elementProps(`category-bar-fill`, identity)} style={[styles.fill, { backgroundColor: palette.blue, opacity: selected ? 1 : 0.8, width: animated.interpolate({ inputRange: [0, 100], outputRange: [`0%`, `100%`] }) }]} /></View>
   </Pressable>;
 });
@@ -98,7 +118,7 @@ const styles = StyleSheet.create({
   denseText: { fontSize: 9 },
   denseCategoryName: { fontSize: 11 },
   denseCategoryChart: { minHeight: 62 },
-  categoryName: { flex: 1, fontSize: 12 },
+  categoryName: { flex: 1, minWidth: 0, fontSize: 12 },
   plot: { flex: 1, position: `relative` },
   categoryRows: { flex: 1, minHeight: 48 },
   categoryScope: { flex: 1, fontSize: 10 },
