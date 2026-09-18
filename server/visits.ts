@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { ApiVisit, VisitSnapshot } from '../src/api/types';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { normalizeVisitPath, normalizeVisitMetadata } from '../src/state/visitMetadata';
+import { normalizeVisitUrl, normalizeVisitPath, normalizeVisitMetadata } from '../src/state/visitMetadata';
 
 type StoredSource = { visits: ApiVisit[]; updatedAt: number };
 type VisitStore = { version: 1; sources: Record<string, StoredSource> };
@@ -40,6 +40,12 @@ const optionalPath = (value: unknown, field: string) => {
   if (!path) throw new VisitStoreError(`Invalid Visit ${field}`, 400);
   return path;
 };
+const optionalUrl = (value: unknown) => {
+  if (value == null) return undefined;
+  const url = normalizeVisitUrl(value);
+  if (!url) throw new VisitStoreError(`Invalid Visit URL`, 400);
+  return url;
+};
 const parseVisit = (value: unknown): ApiVisit => {
   if (!object(value) || typeof value.active !== `boolean`) throw new VisitStoreError(`Invalid Visit`, 400);
   const ipAddress = value.ipAddress ?? null;
@@ -50,6 +56,7 @@ const parseVisit = (value: unknown): ApiVisit => {
     ipAddress,
     active: value.active,
     id: text(value.id, `ID`),
+    url: optionalUrl(value.url),
     source: text(value.source, `Source`),
     device: text(value.device, `Device`),
     browser: text(value.browser, `Browser`),

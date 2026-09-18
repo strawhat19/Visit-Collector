@@ -3,6 +3,7 @@ import { syncVisits } from '../api/client';
 import { detectWebClient } from './client';
 import { updateSession } from './sessions';
 import { AppState, Platform } from 'react-native';
+import { normalizeVisitUrl } from './visitMetadata';
 import { useEffect, useSyncExternalStore } from 'react';
 import { saveLocation, validateLocation } from './locations';
 import { collectVisitMetadata } from './collectVisitMetadata';
@@ -73,6 +74,8 @@ const commit = async <T>(change: (current: StoredCollector) => T, onSaved?: (res
 };
 const pathName = () => Platform.OS === `web` && typeof window !== `undefined` ? window.location.pathname : `/`;
 const cleanPath = (path: string) => `/${path.split(/[?#]/)[0]?.replace(/^\/+/, ``) ?? ``}`.slice(0, 512);
+const captureUrl = (path: string) => Platform.OS === `web` && typeof window !== `undefined`
+  ? normalizeVisitUrl(`${window.location.origin}${window.location.pathname}`) ?? path : path;
 const sourceName = () => {
   if (Platform.OS !== `web` || !document.referrer) return `Direct`;
   try {
@@ -122,7 +125,7 @@ const syncSession = (current: StoredCollector, path: string, now: number, elapse
   restorePendingSession(current);
   const nextSession = updateSession(current, sessionId, {
     ...clientInfo(), now, path, elapsedMs, createIfMissing, active: visible, source: sourceName(), createId: randomId, recordPage: page,
-    metadata: collectVisitMetadata(),
+    url: captureUrl(path), metadata: collectVisitMetadata(),
   });
   trimHistory(current);
   return nextSession;

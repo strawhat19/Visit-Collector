@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { List, Network, ChevronRight } from 'lucide-react-native';
 import type { Activity, AnalyticsSnapshot } from '../state/types';
 
-type ColumnKey = `status` | `source` | `page` | `ip` | `location` | `time`;
+type ColumnKey = `status` | `source` | `page` | `url` | `ip` | `location` | `time`;
 type Column = { key: ColumnKey; label: string; weight: number };
 type TableView = `network` | `traffic`;
 
@@ -21,6 +21,7 @@ const columns: Column[] = [
   { key: `status`, label: `Status`, weight: 1.1 },
   { key: `source`, label: `Source`, weight: 0.85 },
   { key: `page`, label: `Page`, weight: 1.05 },
+  { key: `url`, label: `URL`, weight: 1.6 },
   { key: `ip`, label: `IP Address`, weight: 1.1 },
   { key: `location`, label: `Location`, weight: 1.25 },
   { key: `time`, label: `Time`, weight: 1.15 },
@@ -101,11 +102,12 @@ export const ActivityTable = ({ events, palette, countries, compact = false, onS
         const identity = `${scope}-${event.id}`;
         const date = new Date(event.at);
         const validDate = !Number.isNaN(date.getTime());
+        const url = event.url ?? event.path ?? `Not Recorded`;
         const ip = event.ipAddress?.trim() || `Not Collected`;
         const location = locations.get(event.countryCode) ?? `Not Shared`;
         const status = event.type === `visit` ? `New Visitor` : `Page Viewed`;
         const timeLabel = validDate ? date.toLocaleString() : `Unknown Time`;
-        const values = { ip, status, location, page: event.path, source: event.source, time: timeLabel };
+        const values = { ip, url, status, location, page: event.path, source: event.source, time: timeLabel };
         return (
           <Pressable
             key={event.id}
@@ -113,78 +115,104 @@ export const ActivityTable = ({ events, palette, countries, compact = false, onS
             onPress={() => onSelect(event)}
             accessibilityRole={`button`}
             accessibilityHint={`Open All Visit Details`}
-            accessibilityLabel={`${status}. Source: ${event.source}. Page: ${event.path}. IP Address: ${ip}. Location: ${location}. Time: ${timeLabel}`}
-            style={({ pressed }) => [styles.row, compact && styles.compactRow, { borderColor: palette.border, backgroundColor: pressed ? palette.raised : `transparent` }]}
+            accessibilityLabel={`${status}. Source: ${event.source}. Page: ${event.path}. URL: ${url}. IP Address: ${ip}. Location: ${location}. Time: ${timeLabel}`}
+            style={({ pressed }) => [styles.row, { borderColor: palette.border, backgroundColor: pressed ? palette.raised : `transparent` }]}
           >
-            {visibleColumns.map(column => column.key === `status` ? (
-              <View
-                key={column.key}
-                {...elementProps(`activity-actions-cell actionsCell`, identity)}
-                style={[styles.cell, styles.actionsCell, { flex: column.weight }]}
-              >
+            <View
+              {...elementProps(`activity-table-row-columns`, identity)}
+              style={[styles.rowColumns, compact && styles.compactRow]}
+            >
+              {visibleColumns.map(column => column.key === `status` ? (
                 <View
-                  {...elementProps(`activity-row-status rowStatus`, identity)}
-                  style={styles.rowStatus}
+                  key={column.key}
+                  {...elementProps(`activity-actions-cell actionsCell`, identity)}
+                  style={[styles.cell, styles.actionsCell, { flex: column.weight }]}
                 >
                   <View
-                    {...elementProps(`activity-status-dot-wrap statusDotWrap`, identity)}
-                    style={styles.statusDotWrap}
+                    {...elementProps(`activity-row-status rowStatus`, identity)}
+                    style={styles.rowStatus}
                   >
                     <View
-                      {...elementProps(`activity-status-dot statusDot`, identity)}
-                      style={[styles.statusDot, { backgroundColor: event.type === `visit` ? palette.green : palette.faint }]}
-                    />
+                      {...elementProps(`activity-status-dot-wrap statusDotWrap`, identity)}
+                      style={styles.statusDotWrap}
+                    >
+                      <View
+                        {...elementProps(`activity-status-dot statusDot`, identity)}
+                        style={[styles.statusDot, { backgroundColor: event.type === `visit` ? palette.green : palette.faint }]}
+                      />
+                    </View>
+                    <Text
+                      {...elementProps(`activity-status-text statusText`, identity)}
+                      numberOfLines={1}
+                      style={[styles.statusText, compact && styles.compactText, { color: palette.text }]}
+                    >
+                      {status}
+                    </Text>
                   </View>
-                  <Text
-                    {...elementProps(`activity-status-text statusText`, identity)}
-                    numberOfLines={1}
-                    style={[styles.statusText, compact && styles.compactText, { color: palette.text }]}
-                  >
-                    {status}
-                  </Text>
                 </View>
-              </View>
-            ) : column.key === `time` ? (
+              ) : column.key === `time` ? (
+                <View
+                  key={column.key}
+                  {...elementProps(`activity-time-cell`, identity)}
+                  style={[styles.cell, styles.timeCell, { flex: column.weight }]}
+                >
+                  <Text
+                    {...elementProps(`activity-date`, identity)}
+                    numberOfLines={1}
+                    style={[styles.timeText, { color: palette.text }]}
+                  >
+                    {validDate ? dateFormat.format(date) : `Unknown Time`}
+                  </Text>
+                  {validDate && (
+                    <Text
+                      {...elementProps(`activity-clock-time`, identity)}
+                      numberOfLines={1}
+                      style={[styles.timeText, { color: palette.muted }]}
+                    >
+                      {timeFormat.format(date)}
+                    </Text>
+                  )}
+                </View>
+              ) : (
+                <Text
+                  key={column.key}
+                  {...elementProps(`activity-${column.key}-cell`, identity)}
+                  numberOfLines={1}
+                  accessibilityLabel={`${column.label}: ${values[column.key]}`}
+                  style={[styles.cell, styles.cellText, compact && styles.compactText, { flex: column.weight, color: column.key === `ip` || column.key === `location` ? palette.text : palette.muted }]}
+                >
+                  {values[column.key]}
+                </Text>
+              ))}
+              <ChevronRight
+                {...elementProps(`activity-open-details-icon`, identity)}
+                size={13}
+                accessible={false}
+                color={palette.faint}
+                style={styles.openIcon}
+              />
+            </View>
+            {compact && (
               <View
-                key={column.key}
-                {...elementProps(`activity-time-cell`, identity)}
-                style={[styles.cell, styles.timeCell, { flex: column.weight }]}
+                {...elementProps(`activity-compact-url`, identity)}
+                style={styles.compactUrl}
               >
                 <Text
-                  {...elementProps(`activity-date`, identity)}
-                  numberOfLines={1}
-                  style={[styles.timeText, { color: palette.text }]}
+                  {...elementProps(`activity-compact-url-label`, identity)}
+                  style={[styles.compactUrlText, { color: palette.muted }]}
                 >
-                  {validDate ? dateFormat.format(date) : `Unknown Time`}
+                  URL
                 </Text>
-                {validDate && (
-                  <Text
-                    {...elementProps(`activity-clock-time`, identity)}
-                    numberOfLines={1}
-                    style={[styles.timeText, { color: palette.muted }]}
-                  >
-                    {timeFormat.format(date)}
-                  </Text>
-                )}
+                <Text
+                  {...elementProps(`activity-compact-url-value`, identity)}
+                  numberOfLines={1}
+                  accessibilityLabel={`URL: ${url}`}
+                  style={[styles.cell, styles.compactUrlText, { flex: 1, color: palette.muted }]}
+                >
+                  {url}
+                </Text>
               </View>
-            ) : (
-              <Text
-                key={column.key}
-                {...elementProps(`activity-${column.key}-cell`, identity)}
-                numberOfLines={1}
-                accessibilityLabel={`${column.label}: ${values[column.key]}`}
-                style={[styles.cell, styles.cellText, compact && styles.compactText, { flex: column.weight, color: column.key === `ip` || column.key === `location` ? palette.text : palette.muted }]}
-              >
-                {values[column.key]}
-              </Text>
-            ))}
-            <ChevronRight
-              {...elementProps(`activity-open-details-icon`, identity)}
-              size={13}
-              accessible={false}
-              color={palette.faint}
-              style={styles.openIcon}
-            />
+            )}
           </Pressable>
         );
       }) : (
@@ -213,15 +241,18 @@ const styles = StyleSheet.create({
   openIcon: { width: 13, flexShrink: 0 },
   actionsCell: { justifyContent: `center` },
   timeText: { fontSize: 11, lineHeight: 15 },
+  compactUrlText: { fontSize: 10, lineHeight: 12 },
   tabText: { fontSize: 11, fontWeight: `600` },
   timeCell: { gap: 1, justifyContent: `center` },
+  compactUrl: { gap: 6, flexDirection: `row` },
   headingText: { fontSize: 11, fontWeight: `600` },
   statusDot: { width: 7, height: 7, borderRadius: 4 },
   statusDotWrap: { width: 10, flexShrink: 0, alignItems: `center` },
   statusText: { flex: 1, minWidth: 0, fontSize: 12, fontWeight: `500` },
   empty: { minHeight: 48, alignItems: `center`, justifyContent: `center` },
   rowStatus: { gap: 6, minWidth: 0, flexDirection: `row`, alignItems: `center` },
-  row: { gap: 12, minHeight: 48, borderBottomWidth: 1, flexDirection: `row`, alignItems: `center` },
+  row: { gap: 2, minHeight: 48, borderBottomWidth: 1, justifyContent: `center` },
+  rowColumns: { gap: 12, minWidth: 0, minHeight: 30, flexDirection: `row`, alignItems: `center` },
   headings: { gap: 12, height: 32, borderBottomWidth: 1, flexDirection: `row`, alignItems: `center` },
   tab: { gap: 5, borderRadius: 4, paddingHorizontal: 10, flexDirection: `row`, alignItems: `center`, justifyContent: `center` },
   tabs: { height: 32, padding: 2, borderWidth: 1, borderRadius: 7, marginBottom: 8, flexDirection: `row`, alignSelf: `flex-start` },

@@ -4,7 +4,7 @@ export type DataMode = `local` | `demo`;
 export type LocalUser = { id: string; email: string; number: number; username: string };
 export type Preferences = { haptics: boolean; reducedMotion: boolean; theme: `light` | `dark` | `system` };
 export type LocationInput = { name: string; latitude: number; longitude: number };
-export type Activity = { at: number; id: string; path: string; source: string; sessionId?: string; countryCode: string; visitorKey?: string; type: `visit` | `page`; ipAddress?: string | null };
+export type Activity = { at: number; id: string; url?: string; path: string; source: string; sessionId?: string; countryCode: string; visitorKey?: string; type: `visit` | `page`; ipAddress?: string | null };
 export type AnalyticsSnapshot = {
   online: number;
   visitors: number;
@@ -32,6 +32,7 @@ export type LocalAccount = LocalUser & { createdAt?: number; verifier: PasswordV
 export type StoredLocation = LocationInput & { id: string; ownerKey: string; createdAt: number };
 export type VisitSession = {
   id: string;
+  url?: string;
   pages: number;
   device: string;
   source: string;

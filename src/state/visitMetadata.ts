@@ -68,6 +68,16 @@ export const normalizeVisitPath = (value: unknown): string | undefined => {
   return text(value.split(/[?#]/, 1)?.[0], 384);
 };
 
+export const normalizeVisitUrl = (value: unknown): string | undefined => {
+  if (typeof value !== `string` || value.length > 16384 || /[\u0000-\u001f\u007f\\]/.test(value)) return undefined;
+  if (value.startsWith(`/`)) return normalizeVisitPath(value);
+  try {
+    const url = new URL(value);
+    if (![`http:`, `https:`].includes(url.protocol)) return undefined;
+    return `${url.origin}${url.pathname}`.slice(0, 2048);
+  } catch { return undefined; }
+};
+
 const address = (value: unknown, includePath = false) => {
   if (typeof value !== `string` || value.length > 2048) return undefined;
   try {

@@ -139,7 +139,7 @@ const Collector = () => {
     feedback();
     collector.updatePreferences({ theme: dark ? `light` : `dark` }).catch(error => setMessage(error.message));
   };
-  const inspectEvent = (event: Activity) => setDetail({ title: event.type === `visit` ? `Visit Details` : `Page View Details`, fields: [[`Source`, event.source], [`Page`, event.path], [`IP Address`, event.ipAddress ?? `Not Collected`], [`Location`, data.countries.find(country => country.code === event.countryCode)?.name ?? `Not Shared`], [`Time`, new Date(event.at).toLocaleString()], [`Data`, mode === `demo` ? `Demo · Simulated Event` : `Recorded On This Device`]] });
+  const inspectEvent = (event: Activity) => setDetail({ title: event.type === `visit` ? `Visit Details` : `Page View Details`, fields: [[`Source`, event.source], [`Page`, event.path], [`URL`, event.url ?? event.path ?? `Not Recorded`], [`IP Address`, event.ipAddress ?? `Not Collected`], [`Location`, data.countries.find(country => country.code === event.countryCode)?.name ?? `Not Shared`], [`Time`, new Date(event.at).toLocaleString()], [`Data`, mode === `demo` ? `Demo · Simulated Event` : `Recorded On This Device`]] });
   const selectCountry = (code: string) => {
     feedback();
     setSelectedCountry(current => current === code ? undefined : code);

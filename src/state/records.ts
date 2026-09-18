@@ -1,6 +1,6 @@
 import { MAX_LOCATIONS } from './locations';
 import type { StoredCollector } from './types';
-import { normalizeVisitPath, normalizeVisitMetadata } from './visitMetadata';
+import { normalizeVisitUrl, normalizeVisitPath, normalizeVisitMetadata } from './visitMetadata';
 
 export const freshRecord = (): StoredCollector => ({
   version: 1, revision: 0, userId: null, accounts: [], activity: [], sessions: [], nextNumber: 2, locations: [], locationAssignments: {},
@@ -61,10 +61,13 @@ export const decodeRecord = (raw: string | null): StoredCollector => {
     || !Object.entries(assignments).every(([owner, id]) => text(id) && locations.some(location => location.id === id && location.ownerKey === owner))) throw new Error(`Invalid Saved Locations`);
   return {
     ...value, locations, locationAssignments: assignments,
+    activity: value.activity.map(event => ({ ...event, url: normalizeVisitUrl(event.url) })),
     accounts: accounts.map(account => ({ ...account, createdAt: account.createdAt ?? 0 })),
-    sessions: value.sessions.map(session => ({
-      ...session, operatingSystem: session.operatingSystem || `Unknown`,
-      entryPath: normalizeVisitPath(session.entryPath), lastPath: normalizeVisitPath(session.lastPath), metadata: normalizeVisitMetadata(session.metadata),
-    })),
+    sessions: value.sessions.map(session => {
+      const metadata = normalizeVisitMetadata(session.metadata);
+      const entryPath = normalizeVisitPath(session.entryPath) ?? metadata?.page?.entryPath;
+      const url = normalizeVisitUrl(session.url) ?? normalizeVisitUrl(entryPath ? `${metadata?.page?.origin ?? ``}${entryPath}` : undefined);
+      return { ...session, url, metadata, entryPath, lastPath: normalizeVisitPath(session.lastPath), operatingSystem: session.operatingSystem || `Unknown` };
+    }),
   } as StoredCollector;
 };

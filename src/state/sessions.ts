@@ -4,6 +4,7 @@ import { SESSION_IDLE_MS, trimHistory } from './analytics';
 
 type SessionUpdate = {
   now: number;
+  url?: string;
   path: string;
   source: string;
   device: string;
@@ -30,6 +31,7 @@ export const updateSession = (record: StoredCollector, sessionId: string, update
   if (rotate) {
     if (!update.active || !session && !update.createIfMissing) return sessionId;
     session = {
+      url: update.url ?? update.path,
       visitorKey, pages: 0, activeMs: 0, active: true, id: update.createId(), countryCode: record.locationAssignments[visitorKey] ?? `unknown`,
       startedAt: update.now, lastSeen: update.now, source: update.source, device: update.device, browser: update.browser,
       entryPath: update.path, lastPath: update.path, metadata: update.metadata, operatingSystem: update.operatingSystem ?? `Unknown`,
@@ -46,7 +48,7 @@ export const updateSession = (record: StoredCollector, sessionId: string, update
     record.activity.push({
       id: update.createId(), type: session.pages === 0 ? `visit` : `page`, path: update.path,
       at: update.now, source: session.source, countryCode: session.countryCode, visitorKey, sessionId: session.id,
-      ipAddress: session.ipAddress,
+      ipAddress: session.ipAddress, url: update.url ?? update.path,
     });
     session.pages += 1;
   }

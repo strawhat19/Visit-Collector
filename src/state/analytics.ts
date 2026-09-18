@@ -1,3 +1,4 @@
+import { normalizeVisitUrl } from './visitMetadata';
 import type { Activity, AnalyticsSnapshot, StoredCollector, VisitSession } from './types';
 
 const BUCKET_MS = 5 * 60_000;
@@ -25,7 +26,9 @@ export const aggregateAnalytics = (sessions: VisitSession[], activity: Activity[
   const sessionLookup = new Map(sessions.map(session => [session.id, session]));
   const events = activity.map(event => {
     const session = event.sessionId ? sessionLookup.get(event.sessionId) : undefined;
-    const enriched = event.ipAddress === undefined && session?.ipAddress !== undefined ? { ...event, ipAddress: session.ipAddress } : event;
+    const url = normalizeVisitUrl(event.url) ?? (event.type === `visit` ? normalizeVisitUrl(session?.url) : undefined)
+      ?? normalizeVisitUrl(`${session?.metadata?.page?.origin ?? ``}${event.path}`);
+    const enriched = { ...event, url, ipAddress: event.ipAddress === undefined ? session?.ipAddress : event.ipAddress };
     if (enriched.visitorKey) {
       if (enriched.ipAddress !== undefined || session || enriched.type !== `visit`) return enriched;
       const matchingSessions = sessions.filter(candidate => candidate.visitorKey === enriched.visitorKey && candidate.startedAt === enriched.at && candidate.source === enriched.source);
@@ -46,10 +49,11 @@ export const aggregateAnalytics = (sessions: VisitSession[], activity: Activity[
   events.forEach(keepLatest);
   sessions.forEach(session => {
     if (events.some(event => event.type === `visit` && (event.sessionId === session.id || event.visitorKey === session.visitorKey && event.at === session.startedAt))) return;
+    const path = session.entryPath ?? session.metadata?.page?.entryPath ?? `Not Recorded`;
     keepLatest({
-      id: `session-visit-${session.id}`, type: `visit`, path: `Not Recorded`, at: session.startedAt,
+      id: `session-visit-${session.id}`, type: `visit`, path, at: session.startedAt,
       source: session.source, countryCode: session.countryCode, sessionId: session.id, visitorKey: session.visitorKey,
-      ipAddress: session.ipAddress,
+      ipAddress: session.ipAddress, url: normalizeVisitUrl(session.url) ?? normalizeVisitUrl(`${session.metadata?.page?.origin ?? ``}${path}`),
     });
   });
   const locations = new Map(context.locations.map(location => [location.id, location]));
@@ -135,6 +139,7 @@ export const createDemo = (tick = 0, now = Date.now()): AnalyticsSnapshot => {
   const uniqueVisits: Activity[] = timestamps.map((at, index) => {
     const rank = index * stride % visitors;
     return {
+      url: `https://visit-collector.example/`,
       at, type: `visit`, path: `/`, id: `demo-visit-${step}-${index}`, visitorKey: `demo-visitor-${index}`, sessionId: `demo-session-${index}`,
       source: chooseCounted(sources, rank)?.name ?? `Unknown`, countryCode: chooseCounted(countries, rank)?.code ?? `unknown`,
       ipAddress: `${demoIpBlocks[index % demoIpBlocks.length] ?? `192.0.2`}.${index % 254 + 1}`,
@@ -159,6 +164,6 @@ export const createDemo = (tick = 0, now = Date.now()): AnalyticsSnapshot => {
     devices: [{ name: `Desktop`, count: 796 + step }, { name: `Mobile`, count: 424 }, { name: `Tablet`, count: 64 }],
     browsers: [{ name: `Chrome`, count: 720 + step }, { name: `Safari`, count: 362 }, { name: `Firefox`, count: 112 }, { name: `Edge`, count: 90 }],
     operatingSystems: [{ name: `Windows`, count: 568 + step }, { name: `macOS`, count: 200 }, { name: `iOS`, count: 282 }, { name: `Android`, count: 206 }, { name: `Linux`, count: 28 }],
-    activity: uniqueVisits.slice(0, 16).map((visit, index) => index % 3 ? visit : { ...visit, type: `page`, path: `/pricing`, id: `${visit.id}-page`, at: Math.min(now, visit.at + 1_000) }),
+    activity: uniqueVisits.slice(0, 16).map((visit, index) => index % 3 ? visit : { ...visit, type: `page`, path: `/pricing`, url: `https://visit-collector.example/pricing`, id: `${visit.id}-page`, at: Math.min(now, visit.at + 1_000) }),
   };
 };

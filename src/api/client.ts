@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import { readRecord } from '../state/storage';
 import type { VisitSession } from '../state/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { normalizeVisitPath, normalizeVisitMetadata } from '../state/visitMetadata';
+import { normalizeVisitUrl, normalizeVisitPath, normalizeVisitMetadata } from '../state/visitMetadata';
 
 const sourceKey = `visit-collector:api-source:v1`;
 let savedSnapshot = ``;
@@ -106,6 +106,7 @@ const toApiVisits = (sessions: VisitSession[]): ApiVisit[] => sessions.map(sessi
   activeMs: session.activeMs,
   lastSeen: session.lastSeen,
   startedAt: session.startedAt,
+  url: normalizeVisitUrl(session.url),
   source: session.source || `Direct`,
   device: session.device || `Unknown`,
   browser: session.browser || `Unknown`,
