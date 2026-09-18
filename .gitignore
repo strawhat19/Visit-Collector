@@ -2,6 +2,7 @@ node_modules/
 dist/
 .expo/
 .codex-tmp/
+.local/
 .vercel/
 coverage/
 web-build/

@@ -22,7 +22,9 @@ export const saveLocation = (record: StoredCollector, input: LocationInput, sess
   const session = record.sessions.find(candidate => candidate.id === sessionId && candidate.visitorKey === ownerKey);
   if (session) {
     session.countryCode = saved.id;
-    record.activity.forEach(event => { if (event.sessionId === session.id) event.countryCode = saved.id; });
+    record.activity.forEach(event => {
+      if (event.sessionId === session.id) event.countryCode = saved.id;
+    });
   }
   return saved.id;
 };

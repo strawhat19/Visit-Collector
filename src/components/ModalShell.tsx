@@ -21,21 +21,84 @@ const ModalShell = ({ title, visible, palette, children, onClose, description, m
   const dismiss = () => { if (dismissible) onClose(); };
 
   return (
-    <Modal {...elementProps(`dialog-modal`, scope)} transparent visible={visible} statusBarTranslucent accessibilityLabel={title} onRequestClose={dismiss} animationType={reducedMotion ? `none` : `fade`}>
-      <View {...elementProps(`dialog-overlay`, scope)} style={styles.overlay}>
-        <Pressable {...elementProps(`dialog-backdrop`, scope)} accessible={false} tabIndex={-1} onPress={dismiss} style={styles.backdrop} />
-        <KeyboardAvoidingView {...elementProps(`dialog-keyboard-position`, scope)} style={styles.position} behavior={Platform.OS === `ios` ? `padding` : undefined}>
-          <View {...elementProps(`dialog-panel`, scope)} accessibilityViewIsModal onAccessibilityEscape={dismiss} style={[styles.panel, { maxWidth, borderColor: palette.border, backgroundColor: palette.card }]}>
-            <View {...elementProps(`dialog-header`, scope)} style={[styles.header, { borderBottomColor: palette.border }]}>
-              <View {...elementProps(`dialog-heading`, scope)} style={styles.heading}>
-                <Text {...elementProps(`dialog-title`, scope)} accessibilityRole={`header`} style={[styles.title, { color: palette.text }]}>{title}</Text>
-                {description ? <Text {...elementProps(`dialog-description`, scope)} style={[styles.description, { color: palette.muted }]}>{description}</Text> : null}
+    <Modal
+      {...elementProps(`dialog-modal`, scope)}
+      transparent
+      visible={visible}
+      statusBarTranslucent
+      accessibilityLabel={title}
+      onRequestClose={dismiss}
+      animationType={reducedMotion ? `none` : `fade`}
+    >
+      <View
+        {...elementProps(`dialog-overlay`, scope)}
+        style={styles.overlay}
+      >
+        <Pressable
+          {...elementProps(`dialog-backdrop`, scope)}
+          accessible={false}
+          tabIndex={-1}
+          onPress={dismiss}
+          style={styles.backdrop}
+        />
+        <KeyboardAvoidingView
+          {...elementProps(`dialog-keyboard-position`, scope)}
+          style={styles.position}
+          behavior={Platform.OS === `ios` ? `padding` : undefined}
+        >
+          <View
+            {...elementProps(`dialog-panel`, scope)}
+            accessibilityViewIsModal
+            onAccessibilityEscape={dismiss}
+            style={[styles.panel, { maxWidth, borderColor: palette.border, backgroundColor: palette.card }]}
+          >
+            <View
+              {...elementProps(`dialog-header`, scope)}
+              style={[styles.header, { borderBottomColor: palette.border }]}
+            >
+              <View
+                {...elementProps(`dialog-heading`, scope)}
+                style={styles.heading}
+              >
+                <Text
+                  {...elementProps(`dialog-title`, scope)}
+                  accessibilityRole={`header`}
+                  style={[styles.title, { color: palette.text }]}
+                >
+                  {title}
+                </Text>
+                {description ? (
+                  <Text
+                    {...elementProps(`dialog-description`, scope)}
+                    style={[styles.description, { color: palette.muted }]}
+                  >
+                    {description}
+                  </Text>
+                ) : null}
               </View>
-              <Pressable {...elementProps(`dialog-close`, scope)} accessibilityRole={`button`} accessibilityLabel={`Close ${title}`} disabled={!dismissible} accessibilityState={{ disabled: !dismissible }} onPress={dismiss} style={({ pressed }) => [styles.close, { opacity: !dismissible ? 0.4 : pressed ? 0.65 : 1, backgroundColor: palette.raised }]}>
-                <X {...elementProps(`dialog-close-icon`, scope)} size={20} color={palette.muted} strokeWidth={1.8} />
+              <Pressable
+                {...elementProps(`dialog-close`, scope)}
+                accessibilityRole={`button`}
+                accessibilityLabel={`Close ${title}`}
+                disabled={!dismissible}
+                accessibilityState={{ disabled: !dismissible }}
+                onPress={dismiss}
+                style={({ pressed }) => [styles.close, { opacity: !dismissible ? 0.4 : pressed ? 0.65 : 1, backgroundColor: palette.raised }]}
+              >
+                <X
+                  {...elementProps(`dialog-close-icon`, scope)}
+                  size={20}
+                  color={palette.muted}
+                  strokeWidth={1.8}
+                />
               </Pressable>
             </View>
-            <ScrollView {...elementProps(`dialog-scroll`, scope)} style={styles.scroll} keyboardShouldPersistTaps={`handled`} contentContainerStyle={styles.content}>
+            <ScrollView
+              {...elementProps(`dialog-scroll`, scope)}
+              style={styles.scroll}
+              keyboardShouldPersistTaps={`handled`}
+              contentContainerStyle={styles.content}
+            >
               {children}
             </ScrollView>
           </View>

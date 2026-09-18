@@ -17,8 +17,12 @@ export const currentPosition = async (isCurrent: () => boolean = () => true): Pr
   try {
     const position = await Promise.race([
       Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-      new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`Location Timed Out. Try Again Or Enter Coordinates`)), 20_000); }),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Location Timed Out. Try Again Or Enter Coordinates`)), 20_000);
+      }),
     ]);
     return { latitude: position.coords.latitude, longitude: position.coords.longitude };
-  } finally { if (timer) clearTimeout(timer); }
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 };

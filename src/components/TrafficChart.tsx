@@ -1,5 +1,5 @@
-import type { Palette } from '../ui/theme';
 import PlatformIcon from './PlatformIcon';
+import type { Palette } from '../ui/theme';
 import { elementProps } from '../ui/elementProps';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { memo, useId, useEffect, useRef, useState } from 'react';
@@ -7,6 +7,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type ChartProps = {
   unit?: string;
+  color?: string;
   title?: string;
   scope?: string;
   dense?: boolean;
@@ -25,12 +26,25 @@ const Bar = memo(({ value, height, color, reducedMotion, label, selected, onSele
     animation.start();
     return () => animation.stop();
   }, [animated, value, reducedMotion]);
-  return <Pressable {...elementProps(`timeline-bar-button`, identity)} accessibilityRole={`button`} accessibilityLabel={label} aria-pressed={selected} accessibilityState={{ selected }} onPress={onSelect} style={styles.barTouch}>
-    <Animated.View {...elementProps(`timeline-bar-fill`, identity)} style={[styles.bar, { backgroundColor: color, opacity: selected ? 1 : 0.8, height: animated.interpolate({ inputRange: [0, 1], outputRange: [0, Math.max(2, height)] }) }]} />
-  </Pressable>;
+  return (
+    <Pressable
+      {...elementProps(`timeline-bar-button`, identity)}
+      accessibilityRole={`button`}
+      accessibilityLabel={label}
+      aria-pressed={selected}
+      accessibilityState={{ selected }}
+      onPress={onSelect}
+      style={styles.barTouch}
+    >
+      <Animated.View
+        {...elementProps(`timeline-bar-fill`, identity)}
+        style={[styles.bar, { backgroundColor: color, opacity: selected ? 1 : 0.8, height: animated.interpolate({ inputRange: [0, 1], outputRange: [0, Math.max(2, height)] }) }]}
+      />
+    </Pressable>
+  );
 });
 
-const CategoryBar = memo(({ label, value, total, palette, reducedMotion, unit, selected, onSelect, dense = false }: { label: string; value: number; total: number; palette: Palette; reducedMotion: boolean; unit: string; selected: boolean; dense?: boolean; onSelect: () => void }) => {
+const CategoryBar = memo(({ label, value, total, color, palette, reducedMotion, unit, selected, onSelect, dense = false }: { label: string; color: string; value: number; total: number; palette: Palette; reducedMotion: boolean; unit: string; selected: boolean; dense?: boolean; onSelect: () => void }) => {
   const identity = useId();
   const animated = useRef(new Animated.Value(0)).current;
   const percent = total > 0 ? value / total * 100 : 0;
@@ -39,32 +53,54 @@ const CategoryBar = memo(({ label, value, total, palette, reducedMotion, unit, s
     animation.start();
     return () => animation.stop();
   }, [animated, percent, reducedMotion]);
-  return <Pressable {...elementProps(`category-bar-button`, identity)} accessibilityRole={`button`} accessibilityLabel={`${label}: ${value} ${unit}, ${Math.round(percent)}%`} aria-pressed={selected} accessibilityState={{ selected }} onPress={onSelect} style={({ pressed }) => [styles.categoryRow, dense && styles.denseCategoryRow, { opacity: pressed ? 0.65 : 1 }]}>
-    <View
-      {...elementProps(`category-bar-label-row`, identity)}
-      style={[styles.categoryLabel, dense && { gap: 6 }]}
+  return (
+    <Pressable
+      {...elementProps(`category-bar-button`, identity)}
+      accessibilityRole={`button`}
+      accessibilityLabel={`${label}: ${value} ${unit}, ${Math.round(percent)}%`}
+      aria-pressed={selected}
+      accessibilityState={{ selected }}
+      onPress={onSelect}
+      style={({ pressed }) => [styles.categoryRow, dense && styles.denseCategoryRow, { opacity: pressed ? 0.65 : 1 }]}
     >
-      <PlatformIcon name={label} color={palette.blue} size={dense ? 14 : 18} />
-      <Text
-        numberOfLines={1}
-        {...elementProps(`category-bar-name`, identity)}
-        style={[styles.categoryName, dense && styles.denseCategoryName, { color: selected ? palette.blue : palette.text }]}
+      <View
+        {...elementProps(`category-bar-label-row`, identity)}
+        style={[styles.categoryLabel, dense && { gap: 6 }]}
       >
-        {label}
-      </Text>
-      <Text
-        numberOfLines={1}
-        {...elementProps(`category-bar-count`, identity)}
-        style={[styles.categoryCount, dense && styles.denseText, { color: palette.muted }]}
+        <PlatformIcon
+          name={label}
+          color={color}
+          size={dense ? 14 : 18}
+        />
+        <Text
+          numberOfLines={1}
+          {...elementProps(`category-bar-name`, identity)}
+          style={[styles.categoryName, dense && styles.denseCategoryName, { color: selected ? color : palette.text }]}
+        >
+          {label}
+        </Text>
+        <Text
+          numberOfLines={1}
+          {...elementProps(`category-bar-count`, identity)}
+          style={[styles.categoryCount, dense && styles.denseText, { color: palette.muted }]}
+        >
+          {dense ? value.toLocaleString(`en-US`) : `${value.toLocaleString(`en-US`)} · ${Math.round(percent)}%`}
+        </Text>
+      </View>
+      <View
+        {...elementProps(`category-bar-track`, identity)}
+        style={[styles.track, dense && { height: 4 }, { backgroundColor: palette.raised }]}
       >
-        {dense ? value.toLocaleString(`en-US`) : `${value.toLocaleString(`en-US`)} · ${Math.round(percent)}%`}
-      </Text>
-    </View>
-    <View {...elementProps(`category-bar-track`, identity)} style={[styles.track, dense && { height: 4 }, { backgroundColor: palette.raised }]}><Animated.View {...elementProps(`category-bar-fill`, identity)} style={[styles.fill, { backgroundColor: palette.blue, opacity: selected ? 1 : 0.8, width: animated.interpolate({ inputRange: [0, 100], outputRange: [`0%`, `100%`] }) }]} /></View>
-  </Pressable>;
+        <Animated.View
+          {...elementProps(`category-bar-fill`, identity)}
+          style={[styles.fill, { backgroundColor: color, opacity: selected ? 1 : 0.8, width: animated.interpolate({ inputRange: [0, 100], outputRange: [`0%`, `100%`] }) }]}
+        />
+      </View>
+    </Pressable>
+  );
 });
 
-const CategoryChart = ({ buckets, palette, reducedMotion, title, unit = `Visit(s)`, scope = `Recorded Sessions`, onFeedback, dense = false }: ChartProps) => {
+const CategoryChart = ({ buckets, palette, color = palette.blue, reducedMotion, title, unit = `Visit(s)`, scope = `Recorded Sessions`, onFeedback, dense = false }: ChartProps) => {
   const identity = useId();
   const [height, setHeight] = useState(140);
   const [page, setPage] = useState(0);
@@ -74,23 +110,121 @@ const CategoryChart = ({ buckets, palette, reducedMotion, title, unit = `Visit(s
   const pages = Math.max(1, Math.ceil(buckets.length / pageSize));
   const currentPage = Math.min(page, pages - 1);
   const selectedBucket = buckets.find(bucket => bucket.label === selected);
-  const paginate = (next: number) => { onFeedback?.(); setPage(next); };
-  return <View {...elementProps(`category-chart`, identity)} style={[styles.categoryChart, dense && styles.denseCategoryChart]} accessibilityLabel={`${title} By Recorded Visits`} onLayout={event => setHeight(event.nativeEvent.layout.height)}>
-    <View {...elementProps(`category-chart-rows`, identity)} style={[styles.categoryRows, dense && { minHeight: 30 }]}>
-      {buckets.length ? buckets.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map(bucket => <CategoryBar key={bucket.label} {...bucket} dense={dense} total={total} palette={palette} reducedMotion={reducedMotion} unit={unit} selected={selected === bucket.label} onSelect={() => { onFeedback?.(); setSelected(selected === bucket.label ? undefined : bucket.label); }} />) : <View {...elementProps(`category-chart-empty`, identity)} style={styles.empty}><Text {...elementProps(`category-chart-empty-label`, identity)} style={[styles.categoryName, dense && styles.denseCategoryName, { color: palette.muted }]}>{dense ? `No Visits Yet` : `No Visits Recorded Yet`}</Text></View>}
+  const paginate = (next: number) => {
+    onFeedback?.();
+    setPage(next);
+  };
+  return (
+    <View
+      {...elementProps(`category-chart`, identity)}
+      style={[styles.categoryChart, dense && styles.denseCategoryChart]}
+      accessibilityLabel={`${title} By Recorded Visits`}
+      onLayout={event => setHeight(event.nativeEvent.layout.height)}
+    >
+      <View
+        {...elementProps(`category-chart-rows`, identity)}
+        style={[styles.categoryRows, dense && { minHeight: 30 }]}
+      >
+        {buckets.length ? buckets.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map(bucket => (
+          <CategoryBar
+            color={color}
+            key={bucket.label}
+            {...bucket}
+            dense={dense}
+            total={total}
+            palette={palette}
+            reducedMotion={reducedMotion}
+            unit={unit}
+            selected={selected === bucket.label}
+            onSelect={() => {
+              onFeedback?.();
+              setSelected(selected === bucket.label ? undefined : bucket.label);
+            }}
+          />
+        )) : (
+          <View
+            {...elementProps(`category-chart-empty`, identity)}
+            style={styles.empty}
+          >
+            <Text
+              {...elementProps(`category-chart-empty-label`, identity)}
+              style={[styles.categoryName, dense && styles.denseCategoryName, { color: palette.muted }]}
+            >
+              {dense ? `No Visits Yet` : `No Visits Recorded Yet`}
+            </Text>
+          </View>
+        )}
+      </View>
+      <View
+        {...elementProps(`category-chart-footer`, identity)}
+        style={[styles.categoryFooter, dense && styles.denseCategoryFooter, { borderColor: palette.border }]}
+      >
+        {(!dense || pages === 1) && (
+          <Text
+            {...elementProps(`category-chart-scope`, identity)}
+            numberOfLines={1}
+            accessibilityLiveRegion={`polite`}
+            style={[styles.categoryScope, { color: palette.faint }]}
+          >
+            {selectedBucket ? `${selectedBucket.label} · ${selectedBucket.value} ${unit}` : scope}
+          </Text>
+        )}
+        {pages > 1 ? (
+          <View
+            {...elementProps(`category-chart-pagination`, identity)}
+            style={[styles.pager, dense && styles.densePager]}
+          >
+            <Pressable
+              {...elementProps(`category-chart-previous`, identity)}
+              hitSlop={dense ? 5 : 0}
+              accessibilityRole={`button`}
+              accessibilityLabel={`Previous ${title} Page`}
+              disabled={currentPage === 0}
+              aria-disabled={currentPage === 0}
+              accessibilityState={{ disabled: currentPage === 0 }}
+              onPress={() => paginate(currentPage - 1)}
+              style={[styles.pageButton, dense && styles.densePageButton, { opacity: currentPage === 0 ? 0.35 : 1 }]}
+            >
+              <ChevronLeft
+                {...elementProps(`category-chart-previous-icon`, identity)}
+                size={dense ? 15 : 17}
+                color={palette.muted}
+              />
+            </Pressable>
+            <Text
+              {...elementProps(`category-chart-page-label`, identity)}
+              accessibilityLiveRegion={`polite`}
+              style={[styles.axisText, dense && styles.denseText, { color: palette.muted }]}
+            >
+              {currentPage + 1}
+              /
+              {pages}
+            </Text>
+            <Pressable
+              {...elementProps(`category-chart-next`, identity)}
+              hitSlop={dense ? 5 : 0}
+              accessibilityRole={`button`}
+              accessibilityLabel={`Next ${title} Page`}
+              disabled={currentPage === pages - 1}
+              aria-disabled={currentPage === pages - 1}
+              accessibilityState={{ disabled: currentPage === pages - 1 }}
+              onPress={() => paginate(currentPage + 1)}
+              style={[styles.pageButton, dense && styles.densePageButton, { opacity: currentPage === pages - 1 ? 0.35 : 1 }]}
+            >
+              <ChevronRight
+                {...elementProps(`category-chart-next-icon`, identity)}
+                size={dense ? 15 : 17}
+                color={palette.muted}
+              />
+            </Pressable>
+          </View>
+        ) : null}
+      </View>
     </View>
-    <View {...elementProps(`category-chart-footer`, identity)} style={[styles.categoryFooter, dense && styles.denseCategoryFooter, { borderColor: palette.border }]}>
-      {(!dense || pages === 1) && <Text {...elementProps(`category-chart-scope`, identity)} numberOfLines={1} accessibilityLiveRegion={`polite`} style={[styles.categoryScope, { color: palette.faint }]}>{selectedBucket ? `${selectedBucket.label} · ${selectedBucket.value} ${unit}` : scope}</Text>}
-      {pages > 1 ? <View {...elementProps(`category-chart-pagination`, identity)} style={[styles.pager, dense && styles.densePager]}>
-        <Pressable {...elementProps(`category-chart-previous`, identity)} hitSlop={dense ? 5 : 0} accessibilityRole={`button`} accessibilityLabel={`Previous ${title} Page`} disabled={currentPage === 0} aria-disabled={currentPage === 0} accessibilityState={{ disabled: currentPage === 0 }} onPress={() => paginate(currentPage - 1)} style={[styles.pageButton, dense && styles.densePageButton, { opacity: currentPage === 0 ? 0.35 : 1 }]}><ChevronLeft {...elementProps(`category-chart-previous-icon`, identity)} size={dense ? 15 : 17} color={palette.muted} /></Pressable>
-        <Text {...elementProps(`category-chart-page-label`, identity)} accessibilityLiveRegion={`polite`} style={[styles.axisText, dense && styles.denseText, { color: palette.muted }]}>{currentPage + 1}/{pages}</Text>
-        <Pressable {...elementProps(`category-chart-next`, identity)} hitSlop={dense ? 5 : 0} accessibilityRole={`button`} accessibilityLabel={`Next ${title} Page`} disabled={currentPage === pages - 1} aria-disabled={currentPage === pages - 1} accessibilityState={{ disabled: currentPage === pages - 1 }} onPress={() => paginate(currentPage + 1)} style={[styles.pageButton, dense && styles.densePageButton, { opacity: currentPage === pages - 1 ? 0.35 : 1 }]}><ChevronRight {...elementProps(`category-chart-next-icon`, identity)} size={dense ? 15 : 17} color={palette.muted} /></Pressable>
-      </View> : null}
-    </View>
-  </View>;
+  );
 };
 
-const TimelineChart = ({ buckets, palette, reducedMotion, title = `Visits`, unit = `Visit(s)`, scope = `Last Hour · 5-Minute Bins`, onFeedback, dense = false }: ChartProps) => {
+const TimelineChart = ({ buckets, palette, color = palette.blue, reducedMotion, title = `Visits`, unit = `Visit(s)`, scope = `Last Hour · 5-Minute Bins`, onFeedback, dense = false }: ChartProps) => {
   const identity = useId();
   const [plotHeight, setPlotHeight] = useState(160);
   const [selected, setSelected] = useState<string>();
@@ -98,21 +232,103 @@ const TimelineChart = ({ buckets, palette, reducedMotion, title = `Visits`, unit
   const ceiling = Math.ceil(max / 4) * 4;
   const selectedBucket = buckets.find(bucket => bucket.label === selected);
   const tickIndexes = [...new Set(dense ? [0, Math.max(0, buckets.length - 1)] : [0, Math.floor(buckets.length / 3), Math.floor(buckets.length * 2 / 3), Math.max(0, buckets.length - 1)])];
-  return <View {...elementProps(`timeline-chart`, identity)} style={[styles.chart, dense && styles.denseChart]} accessibilityLabel={`${title} Over Time`}>
-    <View {...elementProps(`timeline-plot-row`, identity)} style={styles.plotRow} onLayout={event => setPlotHeight(Math.max(30, event.nativeEvent.layout.height))}>
-      <View {...elementProps(`timeline-value-axis`, identity)} style={[styles.axis, dense && { width: 22 }]}>{(dense ? [ceiling, 0] : [ceiling, ceiling / 2, 0]).map(tick => <Text key={tick} {...elementProps(`timeline-value-tick`, `${identity}-${tick}`)} numberOfLines={1} adjustsFontSizeToFit style={[styles.axisText, dense && styles.denseText, { color: palette.faint }]}>{tick}</Text>)}</View>
-      <View {...elementProps(`timeline-plot`, identity)} style={styles.plot}>
-        {[0, 50, 100].map(position => <View key={position} {...elementProps(`timeline-grid-line`, `${identity}-${position}`)} style={[styles.grid, { top: `${position}%`, borderColor: palette.border }]} />)}
-        <View {...elementProps(`timeline-bars`, identity)} style={[styles.bars, dense && { gap: 3, paddingHorizontal: 0 }]}>{buckets.map(bucket => <Bar key={bucket.label} value={bucket.value / ceiling} height={plotHeight - 2} color={palette.blue} reducedMotion={reducedMotion} selected={selected === bucket.label}
-          label={`${bucket.label}: ${bucket.value} ${unit}`} onSelect={() => { onFeedback?.(); setSelected(selected === bucket.label ? undefined : bucket.label); }} />)}</View>
+  return (
+    <View
+      {...elementProps(`timeline-chart`, identity)}
+      style={[styles.chart, dense && styles.denseChart]}
+      accessibilityLabel={`${title} Over Time`}
+    >
+      <View
+        {...elementProps(`timeline-plot-row`, identity)}
+        style={styles.plotRow}
+        onLayout={event => setPlotHeight(Math.max(30, event.nativeEvent.layout.height))}
+      >
+        <View
+          {...elementProps(`timeline-value-axis`, identity)}
+          style={[styles.axis, dense && { width: 22 }]}
+        >
+          {(dense ? [ceiling, 0] : [ceiling, ceiling / 2, 0]).map(tick => (
+            <Text
+              key={tick}
+              {...elementProps(`timeline-value-tick`, `${identity}-${tick}`)}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={[styles.axisText, dense && styles.denseText, { color: palette.faint }]}
+            >
+              {tick}
+            </Text>
+          ))}
+        </View>
+        <View
+          {...elementProps(`timeline-plot`, identity)}
+          style={styles.plot}
+        >
+          {[0, 50, 100].map(position => (
+            <View
+              key={position}
+              {...elementProps(`timeline-grid-line`, `${identity}-${position}`)}
+              style={[styles.grid, { top: `${position}%`, borderColor: palette.border }]}
+            />
+          ))}
+          <View
+            {...elementProps(`timeline-bars`, identity)}
+            style={[styles.bars, dense && { gap: 3, paddingHorizontal: 0 }]}
+          >
+            {buckets.map(bucket => (
+              <Bar
+                key={bucket.label}
+                value={bucket.value / ceiling}
+                height={plotHeight - 2}
+                color={color}
+                reducedMotion={reducedMotion}
+                selected={selected === bucket.label}
+                label={`${bucket.label}: ${bucket.value} ${unit}`}
+                onSelect={() => {
+                  onFeedback?.();
+                  setSelected(selected === bucket.label ? undefined : bucket.label);
+                }}
+              />
+            ))}
+          </View>
+        </View>
       </View>
+      <View
+        {...elementProps(`timeline-time-axis`, identity)}
+        style={[styles.ticks, dense && styles.denseTicks]}
+      >
+        {tickIndexes.map(index => (
+          <Text
+            key={index}
+            {...elementProps(`timeline-time-tick`, `${identity}-${index}`)}
+            style={[styles.axisText, dense && styles.denseText, { color: palette.muted }]}
+          >
+            {buckets[index]?.label ?? ``}
+          </Text>
+        ))}
+      </View>
+      {(!dense || selectedBucket) && (
+        <Text
+          {...elementProps(`timeline-selection-label`, identity)}
+          accessibilityLiveRegion={`polite`}
+          numberOfLines={1}
+          style={[styles.selection, dense && { paddingTop: 3 }, { color: palette.faint }]}
+        >
+          {selectedBucket ? `${selectedBucket.label} · ${selectedBucket.value} ${unit}` : scope}
+        </Text>
+      )}
     </View>
-    <View {...elementProps(`timeline-time-axis`, identity)} style={[styles.ticks, dense && styles.denseTicks]}>{tickIndexes.map(index => <Text key={index} {...elementProps(`timeline-time-tick`, `${identity}-${index}`)} style={[styles.axisText, dense && styles.denseText, { color: palette.muted }]}>{buckets[index]?.label ?? ``}</Text>)}</View>
-    {(!dense || selectedBucket) && <Text {...elementProps(`timeline-selection-label`, identity)} accessibilityLiveRegion={`polite`} numberOfLines={1} style={[styles.selection, dense && { paddingTop: 3 }, { color: palette.faint }]}>{selectedBucket ? `${selectedBucket.label} · ${selectedBucket.value} ${unit}` : scope}</Text>}
-  </View>;
+  );
 };
 
-const TrafficChart = (props: ChartProps) => props.variant === `category` ? <CategoryChart {...props} /> : <TimelineChart {...props} />;
+const TrafficChart = (props: ChartProps) => props.variant === `category` ? (
+  <CategoryChart
+    {...props}
+  />
+) : (
+  <TimelineChart
+    {...props}
+  />
+);
 
 const styles = StyleSheet.create({
   denseText: { fontSize: 9 },

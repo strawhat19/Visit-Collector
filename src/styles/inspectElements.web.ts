@@ -18,7 +18,9 @@ if (typeof document !== `undefined`) {
     const changed = new Set<Element>();
     records.forEach(record => {
       if (record.type === `attributes` && record.target instanceof Element) changed.add(record.target);
-      else record.addedNodes.forEach(node => { if (node instanceof Element) labelTree(node); });
+      else record.addedNodes.forEach(node => {
+        if (node instanceof Element) labelTree(node);
+      });
     });
     changed.forEach(applyClasses);
   });

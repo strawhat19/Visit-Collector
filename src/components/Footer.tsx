@@ -19,22 +19,74 @@ const Footer = ({ palette, mobile, onError }: FooterProps) => {
   const openPiratechs = () => { void Linking.openURL(piratechsUrl).catch(() => onError(`Unable To Open Piratechs`)); };
   const linkProps = Platform.OS === `web` ? { href: piratechsUrl, hrefAttrs: { target: `_blank`, rel: `noopener noreferrer` } } : { onPress: openPiratechs };
 
-  return <View {...elementProps(`app-footer`)} style={[styles.footer, { borderColor: palette.border, backgroundColor: palette.rail }, mobile && styles.mobile]}>
-    <View {...elementProps(`footer-clock`)} accessibilityLabel={`Local Date And Time ${date}, ${clock}`} style={styles.clock}>
-      <Clock3 {...elementProps(`footer-clock-icon`)} size={12} color={palette.blue} />
-      <View {...elementProps(`footer-date-time`)} style={[styles.dateTime, mobile && styles.mobileDateTime]}>
-        <Text {...elementProps(`footer-date-value`)} numberOfLines={1} style={[styles.time, { color: palette.muted }]}>{date}{mobile ? `` : ` ·`}</Text>
-        <Text {...elementProps(`footer-clock-value`)} numberOfLines={1} style={[styles.time, { color: palette.muted }]}>{clock}</Text>
+  return (
+    <View
+      {...elementProps(`app-footer`)}
+      style={[styles.footer, { borderColor: palette.border, backgroundColor: palette.rail }, mobile && styles.mobile]}
+    >
+      <View
+        {...elementProps(`footer-clock`)}
+        accessibilityLabel={`Local Date And Time ${date}, ${clock}`}
+        style={styles.clock}
+      >
+        <Clock3
+          {...elementProps(`footer-clock-icon`)}
+          size={12}
+          color={palette.blue}
+        />
+        <View
+          {...elementProps(`footer-date-time`)}
+          style={[styles.dateTime, mobile && styles.mobileDateTime]}
+        >
+          <Text
+            {...elementProps(`footer-date-value`)}
+            numberOfLines={1}
+            style={[styles.time, { color: palette.muted }]}
+          >
+            {date}{mobile ? `` : ` ·`}
+          </Text>
+          <Text
+            {...elementProps(`footer-clock-value`)}
+            numberOfLines={1}
+            style={[styles.time, { color: palette.muted }]}
+          >
+            {clock}
+          </Text>
+        </View>
+      </View>
+      <View
+        {...elementProps(`footer-copyright`)}
+        style={styles.copyright}
+      >
+        <Text
+          {...elementProps(`footer-copyright-year`)}
+          style={[styles.text, { color: palette.muted }]}
+        >
+          © {now.getFullYear()}
+        </Text>
+        <Pressable
+          {...elementProps(`footer-piratechs-link`)}
+          {...linkProps}
+          hitSlop={6}
+          accessibilityRole={`link`}
+          accessibilityLabel={`Piratechs Website`}
+          style={({ pressed }) => [styles.link, { opacity: pressed ? 0.65 : 1 }]}
+        >
+          <Text
+            {...elementProps(`footer-piratechs-label`)}
+            style={[styles.text, { color: palette.blue }]}
+          >
+            Piratechs
+          </Text>
+          <ExternalLink
+            {...elementProps(`footer-piratechs-icon`)}
+            size={11}
+            color={palette.blue}
+          />
+        </Pressable>
       </View>
     </View>
-    <View {...elementProps(`footer-copyright`)} style={styles.copyright}>
-      <Text {...elementProps(`footer-copyright-year`)} style={[styles.text, { color: palette.muted }]}>© {now.getFullYear()}</Text>
-      <Pressable {...elementProps(`footer-piratechs-link`)} {...linkProps} hitSlop={6} accessibilityRole={`link`} accessibilityLabel={`Piratechs Website`} style={({ pressed }) => [styles.link, { opacity: pressed ? 0.65 : 1 }]}>
-        <Text {...elementProps(`footer-piratechs-label`)} style={[styles.text, { color: palette.blue }]}>Piratechs</Text>
-        <ExternalLink {...elementProps(`footer-piratechs-icon`)} size={11} color={palette.blue} />
-      </Pressable>
-    </View>
-  </View>;
+  );
 };
 
 const styles = StyleSheet.create({

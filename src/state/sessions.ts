@@ -1,4 +1,5 @@
 import type { StoredCollector } from './types';
+import type { VisitMetadata } from './visitMetadata';
 import { SESSION_IDLE_MS, trimHistory } from './analytics';
 
 type SessionUpdate = {
@@ -11,6 +12,7 @@ type SessionUpdate = {
   elapsedMs: number;
   recordPage: boolean;
   createId: () => string;
+  metadata?: VisitMetadata;
   operatingSystem?: string;
   createIfMissing: boolean;
 };
@@ -30,11 +32,14 @@ export const updateSession = (record: StoredCollector, sessionId: string, update
     session = {
       visitorKey, pages: 0, activeMs: 0, active: true, id: update.createId(), countryCode: record.locationAssignments[visitorKey] ?? `unknown`,
       startedAt: update.now, lastSeen: update.now, source: update.source, device: update.device, browser: update.browser,
-      operatingSystem: update.operatingSystem ?? `Unknown`,
+      entryPath: update.path, lastPath: update.path, metadata: update.metadata, operatingSystem: update.operatingSystem ?? `Unknown`,
     };
     record.sessions.push(session);
   }
   if (!session) return sessionId;
+  session.lastPath = update.path;
+  session.entryPath ??= update.path;
+  if (update.metadata) session.metadata = { ...update.metadata, page: session.metadata?.page ?? update.metadata.page };
   const locationCode = record.locationAssignments[visitorKey];
   if (locationCode) session.countryCode = locationCode;
   if (update.recordPage || rotate) {

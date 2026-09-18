@@ -1,3 +1,5 @@
+import type { VisitMetadata } from './visitMetadata';
+
 export type DataMode = `local` | `demo`;
 export type LocalUser = { id: string; email: string; number: number; username: string };
 export type Preferences = { haptics: boolean; reducedMotion: boolean; theme: `light` | `dark` | `system` };
@@ -40,8 +42,11 @@ export type VisitSession = {
   startedAt: number;
   visitorKey: string;
   countryCode: string;
+  entryPath?: string;
+  lastPath?: string;
   operatingSystem?: string;
   ipAddress?: string | null;
+  metadata?: VisitMetadata;
 };
 export type StoredCollector = {
   version: 1;

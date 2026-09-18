@@ -1,5 +1,6 @@
 import { MAX_LOCATIONS } from './locations';
 import type { StoredCollector } from './types';
+import { normalizeVisitPath, normalizeVisitMetadata } from './visitMetadata';
 
 export const freshRecord = (): StoredCollector => ({
   version: 1, revision: 0, userId: null, accounts: [], activity: [], sessions: [], nextNumber: 2, locations: [], locationAssignments: {},
@@ -61,6 +62,9 @@ export const decodeRecord = (raw: string | null): StoredCollector => {
   return {
     ...value, locations, locationAssignments: assignments,
     accounts: accounts.map(account => ({ ...account, createdAt: account.createdAt ?? 0 })),
-    sessions: value.sessions.map(session => ({ ...session, operatingSystem: session.operatingSystem || `Unknown` })),
+    sessions: value.sessions.map(session => ({
+      ...session, operatingSystem: session.operatingSystem || `Unknown`,
+      entryPath: normalizeVisitPath(session.entryPath), lastPath: normalizeVisitPath(session.lastPath), metadata: normalizeVisitMetadata(session.metadata),
+    })),
   } as StoredCollector;
 };

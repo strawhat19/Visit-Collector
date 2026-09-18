@@ -79,13 +79,37 @@ const Starfield = () => {
     }
     return { positions, colors };
   }, []);
-  return <points name={`geography-stars-${scope}`} frustumCulled={false}>
-    <bufferGeometry name={`geography-stars-geometry-${scope}`}>
-      <bufferAttribute name={`geography-stars-positions-${scope}`} attach={`attributes-position`} args={[stars.positions, 3]} />
-      <bufferAttribute name={`geography-stars-colors-${scope}`} attach={`attributes-color`} args={[stars.colors, 3]} />
-    </bufferGeometry>
-    <pointsMaterial name={`geography-stars-material-${scope}`} transparent vertexColors sizeAttenuation size={0.04} opacity={0.95} depthWrite={false} toneMapped={false} />
-  </points>;
+  return (
+    <points
+      name={`geography-stars-${scope}`}
+      frustumCulled={false}
+    >
+      <bufferGeometry
+        name={`geography-stars-geometry-${scope}`}
+      >
+        <bufferAttribute
+          name={`geography-stars-positions-${scope}`}
+          attach={`attributes-position`}
+          args={[stars.positions, 3]}
+        />
+        <bufferAttribute
+          name={`geography-stars-colors-${scope}`}
+          attach={`attributes-color`}
+          args={[stars.colors, 3]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        name={`geography-stars-material-${scope}`}
+        transparent
+        vertexColors
+        sizeAttenuation
+        size={0.04}
+        opacity={0.95}
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </points>
+  );
 };
 
 const VisitorMarker = ({ point, active, globe, reducedMotion, onSelect }: {
@@ -112,23 +136,85 @@ const VisitorMarker = ({ point, active, globe, reducedMotion, onSelect }: {
     pulseMaterial.current.opacity = (active ? 0.95 : 0.8) * (1 - phase) * (1 - phase);
   });
   return (
-    <group name={`visitor-marker-${identity}`} position={position} quaternion={quaternion} onClick={event => { event.stopPropagation(); onSelect?.(point.id); }}>
-      <mesh name={`visitor-marker-touch-target-${identity}`}>
-        <circleGeometry name={`visitor-marker-touch-geometry-${identity}`} args={[radius * 3, 24]} />
-        <meshBasicMaterial name={`visitor-marker-touch-material-${identity}`} transparent opacity={0} depthWrite={false} />
+    <group
+      name={`visitor-marker-${identity}`}
+      position={position}
+      quaternion={quaternion}
+      onClick={event => {
+        event.stopPropagation();
+        onSelect?.(point.id);
+      }}
+    >
+      <mesh
+        name={`visitor-marker-touch-target-${identity}`}
+      >
+        <circleGeometry
+          name={`visitor-marker-touch-geometry-${identity}`}
+          args={[radius * 3, 24]}
+        />
+        <meshBasicMaterial
+          name={`visitor-marker-touch-material-${identity}`}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
       </mesh>
-      <group ref={billboard} name={`visitor-marker-billboard-${identity}`}>
-        <mesh name={`visitor-marker-halo-${identity}`} renderOrder={2} raycast={ignoreMarkerRaycast}>
-          <ringGeometry name={`visitor-marker-halo-geometry-${identity}`} args={[radius * 1.55, radius * 1.85, 32]} />
-          <meshBasicMaterial name={`visitor-marker-halo-material-${identity}`} transparent color={markerColor} opacity={active ? 0.48 : 0.32} depthWrite={false} toneMapped={false} />
+      <group
+        ref={billboard}
+        name={`visitor-marker-billboard-${identity}`}
+      >
+        <mesh
+          name={`visitor-marker-halo-${identity}`}
+          renderOrder={2}
+          raycast={ignoreMarkerRaycast}
+        >
+          <ringGeometry
+            name={`visitor-marker-halo-geometry-${identity}`}
+            args={[radius * 1.55, radius * 1.85, 32]}
+          />
+          <meshBasicMaterial
+            name={`visitor-marker-halo-material-${identity}`}
+            transparent
+            color={markerColor}
+            opacity={active ? 0.48 : 0.32}
+            depthWrite={false}
+            toneMapped={false}
+          />
         </mesh>
-        <mesh ref={pulse} name={`visitor-marker-pulse-${identity}`} renderOrder={2} visible={!reducedMotion} raycast={ignoreMarkerRaycast}>
-          <ringGeometry name={`visitor-marker-pulse-geometry-${identity}`} args={[radius * 1.15, radius * 1.4, 32]} />
-          <meshBasicMaterial ref={pulseMaterial} name={`visitor-marker-pulse-material-${identity}`} transparent color={markerColor} opacity={0.8} depthWrite={false} toneMapped={false} />
+        <mesh
+          ref={pulse}
+          name={`visitor-marker-pulse-${identity}`}
+          renderOrder={2}
+          visible={!reducedMotion}
+          raycast={ignoreMarkerRaycast}
+        >
+          <ringGeometry
+            name={`visitor-marker-pulse-geometry-${identity}`}
+            args={[radius * 1.15, radius * 1.4, 32]}
+          />
+          <meshBasicMaterial
+            ref={pulseMaterial}
+            name={`visitor-marker-pulse-material-${identity}`}
+            transparent
+            color={markerColor}
+            opacity={0.8}
+            depthWrite={false}
+            toneMapped={false}
+          />
         </mesh>
-        <mesh name={`visitor-marker-dot-${identity}`} renderOrder={3}>
-          <circleGeometry name={`visitor-marker-dot-geometry-${identity}`} args={[radius * (active ? 1.2 : 1), 24]} />
-          <meshBasicMaterial name={`visitor-marker-dot-material-${identity}`} color={markerColor} toneMapped={false} />
+        <mesh
+          name={`visitor-marker-dot-${identity}`}
+          renderOrder={3}
+        >
+          <circleGeometry
+            name={`visitor-marker-dot-geometry-${identity}`}
+            args={[radius * (active ? 1.2 : 1), 24]}
+          />
+          <meshBasicMaterial
+            name={`visitor-marker-dot-material-${identity}`}
+            color={markerColor}
+            toneMapped={false}
+          />
         </mesh>
       </group>
     </group>
@@ -162,7 +248,6 @@ const EarthScene = ({ mode, dark, points, controls, onReady, focusRequest, reduc
   const surfaceUniforms = useMemo(() => ({ dayMap: { value: textures[0] }, nightMap: { value: textures[1] }, detailMap: { value: textures[2] }, sunDirection: { value: sunDirection } }), [textures, sunDirection]);
   const shellUniforms = useMemo(() => ({ detailMap: { value: textures[2] }, sunDirection: { value: sunDirection } }), [textures, sunDirection]);
   const atmosphereUniforms = useMemo(() => ({ sunDirection: { value: sunDirection } }), [sunDirection]);
-
   useEffect(() => {
     textures.forEach((texture, index) => {
       texture.colorSpace = index < 2 ? THREE.SRGBColorSpace : THREE.NoColorSpace;
@@ -171,7 +256,6 @@ const EarthScene = ({ mode, dark, points, controls, onReady, focusRequest, reduc
     });
     onReady();
   }, [textures, onReady]);
-
   useEffect(() => {
     const modeChanged = lastMode.current !== mode;
     const requested = focusRequest !== lastFocusRequest.current;
@@ -196,7 +280,6 @@ const EarthScene = ({ mode, dark, points, controls, onReady, focusRequest, reduc
     onZoomChange(nextZoom);
     if (modeChanged) currentZoom.current = nextZoom;
   }, [mode, focusRequest, selectedCountry, focusedLatitude, focusedLongitude, controls, focusFrom, focusTarget, focusRotation, mapFrom, mapTarget, onZoomChange]);
-
   useFrame(({ camera, size }, frameDelta) => {
     if (size.width <= 0 || size.height <= 0) return;
     const delta = Math.min(frameDelta, 0.05);
@@ -248,46 +331,134 @@ const EarthScene = ({ mode, dark, points, controls, onReady, focusRequest, reduc
     lastDrag.current.x = state.drag.x;
     lastDrag.current.y = state.drag.y;
   });
-
   return (
     <>
       {mode === `globe` ? (
         <>
           <Starfield />
-          <mesh name={`earth-surface-${scope}`} onClick={event => event.stopPropagation()}>
-            <sphereGeometry name={`earth-surface-geometry-${scope}`} args={[1, 96, 64]} />
-            <shaderMaterial name={`earth-surface-material-${scope}`} vertexShader={globeVertex} fragmentShader={surfaceFragment} uniforms={surfaceUniforms} />
+          <mesh
+            name={`earth-surface-${scope}`}
+            onClick={event => event.stopPropagation()}
+          >
+            <sphereGeometry
+              name={`earth-surface-geometry-${scope}`}
+              args={[1, 96, 64]}
+            />
+            <shaderMaterial
+              name={`earth-surface-material-${scope}`}
+              vertexShader={globeVertex}
+              fragmentShader={surfaceFragment}
+              uniforms={surfaceUniforms}
+            />
           </mesh>
-          <mesh ref={clouds} name={`earth-clouds-${scope}`}>
-            <sphereGeometry name={`earth-clouds-geometry-${scope}`} args={[1.005, 64, 48]} />
-            <shaderMaterial name={`earth-clouds-material-${scope}`} transparent depthWrite={false} vertexShader={globeVertex} fragmentShader={cloudsFragment} uniforms={shellUniforms} />
+          <mesh
+            ref={clouds}
+            name={`earth-clouds-${scope}`}
+          >
+            <sphereGeometry
+              name={`earth-clouds-geometry-${scope}`}
+              args={[1.005, 64, 48]}
+            />
+            <shaderMaterial
+              name={`earth-clouds-material-${scope}`}
+              transparent
+              depthWrite={false}
+              vertexShader={globeVertex}
+              fragmentShader={cloudsFragment}
+              uniforms={shellUniforms}
+            />
           </mesh>
-          <mesh name={`earth-atmosphere-${scope}`}>
-            <sphereGeometry name={`earth-atmosphere-geometry-${scope}`} args={[1.027, 64, 48]} />
-            <shaderMaterial name={`earth-atmosphere-material-${scope}`} transparent depthWrite={false} side={THREE.BackSide} blending={THREE.AdditiveBlending} vertexShader={globeVertex} fragmentShader={atmosphereFragment} uniforms={atmosphereUniforms} />
+          <mesh
+            name={`earth-atmosphere-${scope}`}
+          >
+            <sphereGeometry
+              name={`earth-atmosphere-geometry-${scope}`}
+              args={[1.027, 64, 48]}
+            />
+            <shaderMaterial
+              name={`earth-atmosphere-material-${scope}`}
+              transparent
+              depthWrite={false}
+              side={THREE.BackSide}
+              blending={THREE.AdditiveBlending}
+              vertexShader={globeVertex}
+              fragmentShader={atmosphereFragment}
+              uniforms={atmosphereUniforms}
+            />
           </mesh>
         </>
       ) : (
-        <mesh name={`earth-map-${scope}`} onClick={event => event.stopPropagation()}>
-          <planeGeometry name={`earth-map-geometry-${scope}`} args={[2, 1]} />
-          <meshBasicMaterial name={`earth-map-material-${scope}`} map={textures[0]} color={dark ? `#D0DBE5` : `#FFFFFF`} />
+        <mesh
+          name={`earth-map-${scope}`}
+          onClick={event => event.stopPropagation()}
+        >
+          <planeGeometry
+            name={`earth-map-geometry-${scope}`}
+            args={[2, 1]}
+          />
+          <meshBasicMaterial
+            name={`earth-map-material-${scope}`}
+            map={textures[0]}
+            color={dark ? `#D0DBE5` : `#FFFFFF`}
+          />
         </mesh>
       )}
-      {points.map(point => <VisitorMarker key={point.id} point={point} globe={mode === `globe`} reducedMotion={reducedMotion} active={point.id === selectedCountry} onSelect={onSelectCountry} />)}
+      {points.map(point => (
+        <VisitorMarker
+          key={point.id}
+          point={point}
+          globe={mode === `globe`}
+          reducedMotion={reducedMotion}
+          active={point.id === selectedCountry}
+          onSelect={onSelectCountry}
+        />
+      ))}
     </>
   );
 };
 
 class GeographyBoundary extends Component<{ scope: string; dark: boolean; children: ReactNode; onRetry: () => void }, { failed: boolean }> {
   state = { failed: false };
-  static getDerivedStateFromError() { return { failed: true }; }
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
   render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <View {...elementProps(`geography-error`, this.props.scope)} style={styles.status}>
-        <Text {...elementProps(`geography-error-title`, this.props.scope)} style={[styles.statusTitle, { color: this.props.dark ? `#EDF4F8` : `#17252F` }]}>Earth Couldn’t Load</Text>
-        <Text {...elementProps(`geography-error-message`, this.props.scope)} style={styles.statusText}>Your visitor data is still available below</Text>
-        <Pressable {...elementProps(`geography-retry`, this.props.scope)} accessibilityRole={`button`} onPress={this.props.onRetry} style={styles.retry}><RotateCcw {...elementProps(`geography-retry-icon`, this.props.scope)} size={14} color={`#D7FFF4`} /><Text {...elementProps(`geography-retry-label`, this.props.scope)} style={styles.retryText}>Retry</Text></Pressable>
+      <View
+        {...elementProps(`geography-error`, this.props.scope)}
+        style={styles.status}
+      >
+        <Text
+          {...elementProps(`geography-error-title`, this.props.scope)}
+          style={[styles.statusTitle, { color: this.props.dark ? `#EDF4F8` : `#17252F` }]}
+        >
+          Earth Couldn’t Load
+        </Text>
+        <Text
+          {...elementProps(`geography-error-message`, this.props.scope)}
+          style={styles.statusText}
+        >
+          Your visitor data is still available below
+        </Text>
+        <Pressable
+          {...elementProps(`geography-retry`, this.props.scope)}
+          accessibilityRole={`button`}
+          onPress={this.props.onRetry}
+          style={styles.retry}
+        >
+          <RotateCcw
+            {...elementProps(`geography-retry-icon`, this.props.scope)}
+            size={14}
+            color={`#D7FFF4`}
+          />
+          <Text
+            {...elementProps(`geography-retry-label`, this.props.scope)}
+            style={styles.retryText}
+          >
+            Retry
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -304,23 +475,29 @@ const Geography = (props: GeographyProps) => {
   const [active, setActive] = useState(AppState.currentState !== `background`);
   const selected = props.points.find(point => point.id === props.selectedCountry);
   const space = props.mode === `globe`;
+  const zoomInstruction = Platform.OS === `web` ? `scroll or use buttons to zoom` : `use buttons to zoom`;
   const foreground = props.dark ? `#D6E4EC` : `#31414F`;
   const controlStyle = { backgroundColor: props.dark ? `#18242EEB` : `#FFFFFFED`, borderColor: props.dark ? `#30414D` : `#D9E1E7` };
   const onReady = useCallback(() => setReady(true), []);
-  const onZoomChange = useCallback((value: number) => { controls.current.zoom = value; setZoom(value); }, []);
-  const onFocusComplete = useCallback(() => { controls.current.paused = false; setPaused(false); }, []);
-
+  const onZoomChange = useCallback((value: number) => {
+    controls.current.zoom = value;
+    setZoom(value);
+  }, []);
+  const onFocusComplete = useCallback(() => {
+    controls.current.paused = false;
+    setPaused(false);
+  }, []);
   useEffect(() => {
     const subscription = AppState.addEventListener(`change`, state => setActive(state === `active`));
     return () => subscription.remove();
   }, []);
-
-  const changeZoom = (amount: number) => {
+  const changeZoom = useCallback((amount: number) => {
     const next = THREE.MathUtils.clamp(controls.current.zoom + amount, props.mode === `globe` ? 0.8 : 1, props.mode === `globe` ? 1.45 : 5);
-    controls.current.zoom = next;
-    setZoom(next);
-  };
-
+    onZoomChange(next);
+  }, [props.mode, onZoomChange]);
+  const onZoomWheel = useCallback((delta: number) => {
+    changeZoom(-delta / 120 * (props.mode === `globe` ? 0.15 : 0.5));
+  }, [props.mode, changeZoom]);
   const reset = () => {
     controls.current.zoom = 1;
     controls.current.reset += 1;
@@ -328,39 +505,197 @@ const Geography = (props: GeographyProps) => {
     setPaused(false);
     setZoom(1);
   };
-
   const retry = () => {
     useLoader.clear(THREE.TextureLoader, textureSources);
     setReady(false);
     setAttempt(value => value + 1);
   };
-
   const responder = useMemo(() => PanResponder.create({
     onMoveShouldSetPanResponderCapture: (_, gesture) => Math.abs(gesture.dx) + Math.abs(gesture.dy) > 5,
-    onPanResponderGrant: () => { origin.current = { ...controls.current.drag }; controls.current.dragging = true; },
-    onPanResponderMove: (_, gesture) => { controls.current.drag = { x: origin.current.x + gesture.dx, y: origin.current.y + gesture.dy }; },
-    onPanResponderRelease: () => { controls.current.dragging = false; },
-    onPanResponderTerminate: () => { controls.current.dragging = false; },
+    onPanResponderGrant: () => {
+      origin.current = { ...controls.current.drag };
+      controls.current.dragging = true;
+    },
+    onPanResponderMove: (_, gesture) => {
+      controls.current.drag = { x: origin.current.x + gesture.dx, y: origin.current.y + gesture.dy };
+    },
+    onPanResponderRelease: () => {
+      controls.current.dragging = false;
+    },
+    onPanResponderTerminate: () => {
+      controls.current.dragging = false;
+    },
   }), []);
-
   return (
-    <View {...elementProps(`geography-panel`, scope)} style={[styles.container, { backgroundColor: space ? `#060C15` : props.dark ? `#101A24` : `#EDF2F5` }]}>
-      <GeographyBoundary key={attempt} scope={scope} dark={space || props.dark} onRetry={retry}>
-        <View {...elementProps(`geography-interaction-surface`, scope)} style={styles.canvas} {...responder.panHandlers} accessibilityLabel={props.mode === `globe` ? `Interactive Earth. Drag to rotate, use buttons to zoom` : `Satellite world map. Zoom in, then drag to pan`}>
-          <Canvas dpr={[1, 1.5]} frameloop={active ? `always` : `never`} camera={{ fov: 38, near: 0.01, far: 30, position: [0, 0, 3.2] }} gl={{ alpha: true, antialias: true, powerPreference: `default` }} style={styles.canvas}>
-            <Suspense fallback={null}><EarthScene {...props} controls={controls} onReady={onReady} onZoomChange={onZoomChange} onFocusComplete={onFocusComplete} /></Suspense>
+    <View
+      {...elementProps(`geography-panel`, scope)}
+      style={[styles.container, { backgroundColor: space ? `#060C15` : props.dark ? `#101A24` : `#EDF2F5` }]}
+    >
+      <GeographyBoundary
+        key={attempt}
+        scope={scope}
+        dark={space || props.dark}
+        onRetry={retry}
+      >
+        <View
+          {...elementProps(`geography-interaction-surface`, scope)}
+          style={styles.canvas}
+          {...responder.panHandlers}
+          accessibilityLabel={props.mode === `globe` ? `Interactive Earth. Drag to rotate, ${zoomInstruction}` : `Satellite world map. ${zoomInstruction}, then drag to pan`}
+        >
+          <Canvas
+            dpr={[1, 1.5]}
+            onZoomWheel={onZoomWheel}
+            frameloop={active ? `always` : `never`}
+            camera={{ fov: 38, near: 0.01, far: 30, position: [0, 0, 3.2] }}
+            gl={{ alpha: true, antialias: true, powerPreference: `default` }}
+            style={styles.canvas}
+          >
+            <Suspense
+              fallback={null}
+            >
+              <EarthScene
+                {...props}
+                controls={controls}
+                onReady={onReady}
+                onZoomChange={onZoomChange}
+                onFocusComplete={onFocusComplete}
+              />
+            </Suspense>
           </Canvas>
         </View>
-        {!ready && <View {...elementProps(`geography-loading`, scope)} style={[styles.status, { pointerEvents: `none` }]}><ActivityIndicator {...elementProps(`geography-loading-spinner`, scope)} color={`#32B99D`} /><Text {...elementProps(`geography-loading-label`, scope)} style={styles.statusText}>Loading Earth</Text></View>}
+        {!ready && (
+          <View
+            {...elementProps(`geography-loading`, scope)}
+            style={[styles.status, { pointerEvents: `none` }]}
+          >
+            <ActivityIndicator
+              {...elementProps(`geography-loading-spinner`, scope)}
+              color={`#32B99D`}
+            />
+            <Text
+              {...elementProps(`geography-loading-label`, scope)}
+              style={styles.statusText}
+            >
+              Loading Earth
+            </Text>
+          </View>
+        )}
       </GeographyBoundary>
-      {selected && ready && <View {...elementProps(`geography-selection`, scope)} style={[styles.selection, controlStyle, { pointerEvents: `none` }]}><View {...elementProps(`geography-selection-dot`, scope)} style={[styles.dot, { backgroundColor: markerColor }]} /><Text {...elementProps(`geography-selection-label`, scope)} numberOfLines={1} style={[styles.selectionText, { color: foreground }]}>{selected.label} · {selected.value.toLocaleString()}</Text></View>}
-      <View {...elementProps(`geography-controls`, scope)} style={styles.controls}>
-        <Pressable {...elementProps(`geography-zoom-in`, scope)} accessibilityRole={`button`} accessibilityLabel={`Zoom In`} accessibilityState={{ disabled: zoom >= (props.mode === `globe` ? 1.45 : 5) }} disabled={zoom >= (props.mode === `globe` ? 1.45 : 5)} onPress={() => changeZoom(props.mode === `globe` ? 0.15 : 0.5)} style={[styles.control, controlStyle]}><Plus {...elementProps(`geography-zoom-in-icon`, scope)} size={19} color={foreground} /></Pressable>
-        <Pressable {...elementProps(`geography-zoom-out`, scope)} accessibilityRole={`button`} accessibilityLabel={`Zoom Out`} accessibilityState={{ disabled: zoom <= (props.mode === `globe` ? 0.8 : 1) }} disabled={zoom <= (props.mode === `globe` ? 0.8 : 1)} onPress={() => changeZoom(props.mode === `globe` ? -0.15 : -0.5)} style={[styles.control, controlStyle]}><Minus {...elementProps(`geography-zoom-out-icon`, scope)} size={19} color={foreground} /></Pressable>
-        <Pressable {...elementProps(`geography-reset-view`, scope)} accessibilityRole={`button`} accessibilityLabel={`Reset View`} onPress={reset} style={[styles.control, controlStyle]}><RotateCcw {...elementProps(`geography-reset-view-icon`, scope)} size={18} color={foreground} /></Pressable>
-        {props.mode === `globe` && !props.reducedMotion && <Pressable {...elementProps(`geography-toggle-rotation`, scope)} accessibilityRole={`button`} accessibilityLabel={paused ? `Resume Rotation` : `Pause Rotation`} onPress={() => { controls.current.pauseRevision += 1; controls.current.paused = !paused; setPaused(!paused); }} style={[styles.control, controlStyle]}>{paused ? <Play {...elementProps(`geography-resume-rotation-icon`, scope)} size={15} color={foreground} /> : <Pause {...elementProps(`geography-pause-rotation-icon`, scope)} size={15} color={foreground} />}</Pressable>}
+      {selected && ready && (
+        <View
+          {...elementProps(`geography-selection`, scope)}
+          style={[styles.selection, controlStyle, { pointerEvents: `none` }]}
+        >
+          <View
+            {...elementProps(`geography-selection-dot`, scope)}
+            style={[styles.dot, { backgroundColor: markerColor }]}
+          />
+          <Text
+            {...elementProps(`geography-selection-label`, scope)}
+            numberOfLines={1}
+            style={[styles.selectionText, { color: foreground }]}
+          >
+            {selected.label}
+            {` · `}
+            {selected.value.toLocaleString()}
+          </Text>
+        </View>
+      )}
+      <View
+        {...elementProps(`geography-controls`, scope)}
+        style={styles.controls}
+      >
+        <Pressable
+          {...elementProps(`geography-zoom-in`, scope)}
+          accessibilityRole={`button`}
+          accessibilityLabel={`Zoom In`}
+          accessibilityState={{ disabled: zoom >= (props.mode === `globe` ? 1.45 : 5) }}
+          disabled={zoom >= (props.mode === `globe` ? 1.45 : 5)}
+          onPress={() => changeZoom(props.mode === `globe` ? 0.15 : 0.5)}
+          style={[styles.control, controlStyle]}
+        >
+          <Plus
+            {...elementProps(`geography-zoom-in-icon`, scope)}
+            size={19}
+            color={foreground}
+          />
+        </Pressable>
+        <Pressable
+          {...elementProps(`geography-zoom-out`, scope)}
+          accessibilityRole={`button`}
+          accessibilityLabel={`Zoom Out`}
+          accessibilityState={{ disabled: zoom <= (props.mode === `globe` ? 0.8 : 1) }}
+          disabled={zoom <= (props.mode === `globe` ? 0.8 : 1)}
+          onPress={() => changeZoom(props.mode === `globe` ? -0.15 : -0.5)}
+          style={[styles.control, controlStyle]}
+        >
+          <Minus
+            {...elementProps(`geography-zoom-out-icon`, scope)}
+            size={19}
+            color={foreground}
+          />
+        </Pressable>
+        <Pressable
+          {...elementProps(`geography-reset-view`, scope)}
+          accessibilityRole={`button`}
+          accessibilityLabel={`Reset View`}
+          onPress={reset}
+          style={[styles.control, controlStyle]}
+        >
+          <RotateCcw
+            {...elementProps(`geography-reset-view-icon`, scope)}
+            size={18}
+            color={foreground}
+          />
+        </Pressable>
+        {props.mode === `globe` && !props.reducedMotion && (
+          <Pressable
+            {...elementProps(`geography-toggle-rotation`, scope)}
+            accessibilityRole={`button`}
+            accessibilityLabel={paused ? `Resume Rotation` : `Pause Rotation`}
+            onPress={() => {
+              controls.current.pauseRevision += 1;
+              controls.current.paused = !paused;
+              setPaused(!paused);
+            }}
+            style={[styles.control, controlStyle]}
+          >
+            {paused ? (
+              <Play
+                {...elementProps(`geography-resume-rotation-icon`, scope)}
+                size={15}
+                color={foreground}
+              />
+            ) : (
+              <Pause
+                {...elementProps(`geography-pause-rotation-icon`, scope)}
+                size={15}
+                color={foreground}
+              />
+            )}
+          </Pressable>
+        )}
       </View>
-      <Pressable {...elementProps(`geography-texture-attribution`, scope)} accessibilityRole={`link`} accessibilityLabel={`Earth Textures By Solar System Scope, Creative Commons Attribution 4.0`} onPress={() => void Linking.openURL(`https://www.solarsystemscope.com/textures/`).catch(() => undefined)} style={[styles.attribution, { backgroundColor: space ? `#060C15D9` : props.dark ? `#101A24D9` : `#EDF2F5E6` }]}><ExternalLink {...elementProps(`geography-attribution-icon`, scope)} size={10} color={space || props.dark ? `#8DA1AF` : `#61717E`} /><Text {...elementProps(`geography-attribution-label`, scope)} style={[styles.attributionText, { color: space || props.dark ? `#8DA1AF` : `#61717E` }]}>Earth: Solar System Scope · CC BY 4.0</Text></Pressable>
+      <Pressable
+        {...elementProps(`geography-texture-attribution`, scope)}
+        accessibilityRole={`link`}
+        accessibilityLabel={`Earth Textures By Solar System Scope, Creative Commons Attribution 4.0`}
+        onPress={() => void Linking.openURL(`https://www.solarsystemscope.com/textures/`).catch(() => undefined)}
+        style={[styles.attribution, { backgroundColor: space ? `#060C15D9` : props.dark ? `#101A24D9` : `#EDF2F5E6` }]}
+      >
+        <ExternalLink
+          {...elementProps(`geography-attribution-icon`, scope)}
+          size={10}
+          color={space || props.dark ? `#8DA1AF` : `#61717E`}
+        />
+        <Text
+          {...elementProps(`geography-attribution-label`, scope)}
+          style={[styles.attributionText, { color: space || props.dark ? `#8DA1AF` : `#61717E` }]}
+        >
+          Earth: Solar System Scope · CC BY 4.0
+        </Text>
+      </Pressable>
     </View>
   );
 };

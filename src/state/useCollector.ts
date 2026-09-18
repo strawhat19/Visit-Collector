@@ -1,9 +1,11 @@
 import * as Crypto from 'expo-crypto';
+import { syncVisits } from '../api/client';
 import { detectWebClient } from './client';
 import { updateSession } from './sessions';
 import { AppState, Platform } from 'react-native';
 import { useEffect, useSyncExternalStore } from 'react';
 import { saveLocation, validateLocation } from './locations';
+import { collectVisitMetadata } from './collectVisitMetadata';
 import { createVerifier, normalizeEmail, validateAccount, verifyPassword } from './auth';
 import { aggregateAnalytics, createDemo, SESSION_IDLE_MS, trimHistory } from './analytics';
 import type { DataMode, LocalUser, Preferences, LocationInput, StoredCollector } from './types';
@@ -16,12 +18,13 @@ type CollectorState = {
   user: LocalUser | null;
   preferences: Preferences;
   storageError: string | null;
+  visits: StoredCollector[`sessions`];
   data: ReturnType<typeof aggregateAnalytics>;
 };
 let record = freshRecord();
 let snapshot: CollectorState = {
   ready: false, user: null, mode: `local`, visitorNumber: 1, storageError: null,
-  preferences: record.preferences, data: aggregateAnalytics([], [], 0),
+  visits: record.sessions, preferences: record.preferences, data: aggregateAnalytics([], [], 0),
 };
 let owners = 0;
 let demoTick = 0;
@@ -47,13 +50,14 @@ const publicUser = (value: StoredCollector) => {
 const publish = (patch: Partial<CollectorState> = {}) => {
   const user = publicUser(record);
   snapshot = {
-    ...snapshot, user, visitorNumber: user?.number ?? 1, preferences: record.preferences,
+    ...snapshot, user, visits: record.sessions, visitorNumber: user?.number ?? 1, preferences: record.preferences,
     data: snapshot.mode === `demo` ? createDemo(demoTick) : aggregateAnalytics(record.sessions, record.activity, Date.now(), record), ...patch,
   };
   notify();
 };
 const accept = (next: StoredCollector) => {
   if (next.revision >= record.revision || next.revision === 0) record = next;
+  syncVisits(record.sessions);
   publish({ storageError: getStorageIssue() });
 };
 const commit = async <T>(change: (current: StoredCollector) => T, onSaved?: (result: T) => void) => {
@@ -74,7 +78,9 @@ const sourceName = () => {
   try {
     const host = new URL(document.referrer).hostname;
     return host === window.location.hostname ? `Direct` : host.replace(/^www\./, ``).slice(0, 254);
-  } catch { return `Direct`; }
+  } catch {
+    return `Direct`;
+  }
 };
 const clientInfo = () => {
   if (Platform.OS !== `web`) return {
@@ -85,9 +91,14 @@ const clientInfo = () => {
 };
 const saveSessionId = () => {
   if (Platform.OS !== `web`) return;
-  try { window.sessionStorage.setItem(SESSION_KEY, sessionId); } catch { /* A blocked session store still permits an in-memory session. */ }
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, sessionId);
+  } catch { /* A blocked session store still permits an in-memory session. */ }
 };
-const adoptSession = (id: string) => { sessionId = id; saveSessionId(); };
+const adoptSession = (id: string) => {
+  sessionId = id;
+  saveSessionId();
+};
 const restorePendingSession = (current: StoredCollector) => {
   if (!pendingSession) return;
   pendingSession.sessions.forEach(session => {
@@ -96,6 +107,10 @@ const restorePendingSession = (current: StoredCollector) => {
     else {
       saved.pages = Math.max(saved.pages, session.pages);
       saved.activeMs = Math.max(saved.activeMs, session.activeMs);
+      if (session.lastSeen >= saved.lastSeen) {
+        saved.lastPath = session.lastPath;
+        saved.metadata = session.metadata ?? saved.metadata;
+      }
       saved.lastSeen = Math.max(saved.lastSeen, session.lastSeen);
     }
   });
@@ -107,6 +122,7 @@ const syncSession = (current: StoredCollector, path: string, now: number, elapse
   restorePendingSession(current);
   const nextSession = updateSession(current, sessionId, {
     ...clientInfo(), now, path, elapsedMs, createIfMissing, active: visible, source: sourceName(), createId: randomId, recordPage: page,
+    metadata: collectVisitMetadata(),
   });
   trimHistory(current);
   return nextSession;
@@ -124,7 +140,9 @@ const flushSession = async () => {
   try {
     await commit(current => syncSession(current, lastPage || cleanPath(pathName()), now, elapsed, false, !sessionId), adoptSession);
     pendingSession = null;
-  } catch { pendingMs += elapsed; }
+  } catch {
+    pendingMs += elapsed;
+  }
 };
 const initialize = () => {
   if (boot) return boot;
@@ -135,14 +153,20 @@ const initialize = () => {
       try {
         const navigation = performance.getEntriesByType(`navigation`)?.[0] as PerformanceNavigationTiming | undefined;
         sessionId = navigation?.type === `reload` ? window.sessionStorage.getItem(SESSION_KEY) ?? `` : ``;
-      } catch { sessionId = ``; }
+      } catch {
+        sessionId = ``;
+      }
     }
     lastPage = cleanPath(pathName());
     lastPageAt = Date.now();
-    try { accept(await readRecord()); }
-    catch (error) { publish({ storageError: message(error) }); }
-    try { await commit(current => syncSession(current, lastPage, lastPageAt, 0, true, true), adoptSession); }
-    catch {
+    try {
+      accept(await readRecord());
+    } catch (error) {
+      publish({ storageError: message(error) });
+    }
+    try {
+      await commit(current => syncSession(current, lastPage, lastPageAt, 0, true, true), adoptSession);
+    } catch {
       const previousEvents = new Set(record.activity.map(event => event.id));
       adoptSession(syncSession(record, lastPage, lastPageAt, 0, true, true));
       pendingSession = {
@@ -155,8 +179,11 @@ const initialize = () => {
   return boot;
 };
 const refreshFromStorage = async () => {
-  try { accept(await readRecord()); }
-  catch (error) { publish({ storageError: message(error) }); }
+  try {
+    accept(await readRecord());
+  } catch (error) {
+    publish({ storageError: message(error) });
+  }
 };
 const onVisibility = (active: boolean) => {
   if (active === visible) return;
@@ -181,7 +208,9 @@ const start = () => {
     else publish();
   }, 4_000);
   if (Platform.OS === `web`) {
-    const onStorage = (event: StorageEvent) => { if (event.key === STORAGE_KEY || event.key === null) void refreshFromStorage(); };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) void refreshFromStorage();
+    };
     const onVisible = () => onVisibility(document.visibilityState !== `hidden`);
     const onPageHide = () => onVisibility(false);
     const onPageShow = () => onVisibility(document.visibilityState !== `hidden`);
@@ -281,7 +310,10 @@ const addLocation = async (input: LocationInput) => {
     pendingSession = null;
     if (snapshot.mode === `demo`) publish({ mode: `local`, data: aggregateAnalytics(record.sessions, record.activity, Date.now(), record) });
     return result.code;
-  } catch (error) { pendingMs += elapsed; throw error; }
+  } catch (error) {
+    pendingMs += elapsed;
+    throw error;
+  }
 };
 const recordPage = (path: string) => {
   const cleaned = cleanPath(path);
@@ -296,21 +328,51 @@ const recordPage = (path: string) => {
     try {
       await commit(current => syncSession(current, cleaned, now, elapsed, true, true), adoptSession);
       pendingSession = null;
-    } catch (error) { pendingMs += elapsed; throw error; }
+    } catch (error) {
+      pendingMs += elapsed;
+      throw error;
+    }
   }).catch(error => publish({ storageError: message(error) }));
 };
 const clearHistory = async () => {
   await initialize();
-  await commit(current => { current.activity = []; current.sessions = []; });
+  await commit(current => {
+    current.activity = [];
+    current.sessions = [];
+  });
   pendingSession = null;
   pendingMs = 0;
   lastTick = Date.now();
 };
-const resetDemo = () => { demoTick = 0; publish(); };
-const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+const clearLocalData = async () => {
+  await initialize();
+  pendingSession = null;
+  pendingMs = 0;
+  sessionId = ``;
+  lastPageAt = 0;
+  lastTick = Date.now();
+  lastPage = cleanPath(pathName());
+  await commit(current => {
+    const revision = current.revision;
+    Object.assign(current, freshRecord(), { revision });
+    return syncSession(current, lastPage, lastTick, 0, true, true);
+  }, adoptSession);
+  publish({ mode: `local`, data: aggregateAnalytics(record.sessions, record.activity, Date.now(), record) });
+};
+const resetDemo = () => {
+  demoTick = 0;
+  publish();
+};
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+};
 const getSnapshot = () => snapshot;
 export const useCollector = () => {
   const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  useEffect(() => { start(); return stop; }, []);
-  return { ...state, signIn, signUp, signOut, setMode, addLocation, recordPage, resetDemo, clearHistory, updatePreferences };
+  useEffect(() => {
+    start();
+    return stop;
+  }, []);
+  return { ...state, signIn, signUp, signOut, setMode, addLocation, recordPage, resetDemo, clearHistory, clearLocalData, updatePreferences };
 };

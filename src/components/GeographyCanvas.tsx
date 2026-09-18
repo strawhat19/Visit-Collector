@@ -4,7 +4,14 @@ import { Canvas as NativeCanvas, type CanvasProps } from '@react-three/fiber/nat
 
 export { useFrame, useLoader } from '@react-three/fiber/native';
 
-export const Canvas = ({ dpr, ...props }: CanvasProps & { dpr?: [number, number] }) => {
+type GeographyCanvasProps = CanvasProps & { dpr?: [number, number]; onZoomWheel?: (delta: number) => void };
+
+export const Canvas = ({ dpr, onZoomWheel, ...props }: GeographyCanvasProps) => {
   const scope = useId();
-  return <NativeCanvas {...props} {...elementProps(`geography-native-canvas`, scope)} />;
+  return (
+    <NativeCanvas
+      {...props}
+      {...elementProps(`geography-native-canvas`, scope)}
+    />
+  );
 };

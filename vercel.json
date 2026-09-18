@@ -3,5 +3,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
-  "rewrites": [{ "source": "/((?!_expo|assets|favicon.ico).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api(?:/|$)|_expo|assets|favicon.ico).*)", "destination": "/index.html" }]
 }

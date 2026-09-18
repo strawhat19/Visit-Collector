@@ -16,7 +16,9 @@ export const createVerifier = async (password: string, salt: Uint8Array): Promis
   try {
     const hash = await pbkdf2Async(sha256, bytes, salt, { dkLen: 32, asyncTick: 8, c: PASSWORD_ITERATIONS });
     return { hash: bytesToHex(hash), salt: bytesToHex(salt), iterations: PASSWORD_ITERATIONS };
-  } finally { bytes.fill(0); }
+  } finally {
+    bytes.fill(0);
+  }
 };
 export const verifyPassword = async (password: string, verifier: PasswordVerifier) => {
   if (password.length > 128 || verifier.iterations !== PASSWORD_ITERATIONS) return false;

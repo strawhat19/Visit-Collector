@@ -100,7 +100,10 @@ const demoSources = [{ name: `Direct`, count: 566 }, { name: `Google`, count: 33
 const demoIpBlocks = [`192.0.2`, `198.51.100`, `203.0.113`];
 const chooseCounted = <T extends { count: number }>(items: T[], index: number) => {
   let remaining = index;
-  return items.find(item => { remaining -= item.count; return remaining < 0; }) ?? items?.[0];
+  return items.find(item => {
+    remaining -= item.count;
+    return remaining < 0;
+  }) ?? items?.[0];
 };
 const coprimeStride = (length: number) => {
   const gcd = (left: number, right: number): number => right ? gcd(right, left % right) : left;

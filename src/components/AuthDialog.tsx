@@ -90,55 +90,299 @@ const AuthDialog = ({ user, dark, visible, palette, onClose, onSignIn, onSignUp,
   };
 
   return (
-    <ModalShell visible={visible} palette={palette} onClose={onClose} dismissible={!busy} reducedMotion={reducedMotion} title={user ? `Your Account` : `Welcome To Visit Collector`} description={user ? `Your profile on this device` : `A clear view of every arrival`}>
+    <ModalShell
+      visible={visible}
+      palette={palette}
+      onClose={onClose}
+      dismissible={!busy}
+      reducedMotion={reducedMotion}
+      title={user ? `Your Account` : `Welcome To Visit Collector`}
+      description={user ? `Your profile on this device` : `A clear view of every arrival`}
+    >
       {user ? (
-        <View {...elementProps(`auth-account`, scope)} style={styles.account}>
-          <View {...elementProps(`auth-account-avatar`, scope)} style={[styles.avatar, { backgroundColor: palette.selected }]}><UserRound {...elementProps(`auth-account-icon`, scope)} size={27} color={palette.blue} strokeWidth={1.8} /></View>
-          <Text {...elementProps(`auth-account-name`, scope)} style={[styles.accountName, { color: palette.text }]}>{user.username}</Text>
-          <Text {...elementProps(`auth-visitor-number`, scope)} style={[styles.visitor, { color: palette.blue }]}>{`Visitor #${user.number}`}</Text>
-          <Text {...elementProps(`auth-account-email`, scope)} selectable style={[styles.accountEmail, { color: palette.muted }]}>{user.email}</Text>
+        <View
+          {...elementProps(`auth-account`, scope)}
+          style={styles.account}
+        >
+          <View
+            {...elementProps(`auth-account-avatar`, scope)}
+            style={[styles.avatar, { backgroundColor: palette.selected }]}
+          >
+            <UserRound
+              {...elementProps(`auth-account-icon`, scope)}
+              size={27}
+              color={palette.blue}
+              strokeWidth={1.8}
+            />
+          </View>
+          <Text
+            {...elementProps(`auth-account-name`, scope)}
+            style={[styles.accountName, { color: palette.text }]}
+          >
+            {user.username}
+          </Text>
+          <Text
+            {...elementProps(`auth-visitor-number`, scope)}
+            style={[styles.visitor, { color: palette.blue }]}
+          >
+            {`Visitor #${user.number}`}
+          </Text>
+          <Text
+            {...elementProps(`auth-account-email`, scope)}
+            selectable
+            style={[styles.accountEmail, { color: palette.muted }]}
+          >
+            {user.email}
+          </Text>
         </View>
       ) : (
-        <View {...elementProps(`auth-form`, scope)} style={styles.form}>
-          <View {...elementProps(`auth-tabs`, scope)} accessibilityRole={`tablist`} style={[styles.tabs, { backgroundColor: palette.input, borderColor: palette.border }]}>
+        <View
+          {...elementProps(`auth-form`, scope)}
+          style={styles.form}
+        >
+          <View
+            {...elementProps(`auth-tabs`, scope)}
+            accessibilityRole={`tablist`}
+            style={[styles.tabs, { backgroundColor: palette.input, borderColor: palette.border }]}
+          >
             {([`signin`, `signup`] as const).map((tab) => (
-              <Pressable {...elementProps(`auth-tab`, `${scope}-${tab}`)} key={tab} accessibilityRole={`tab`} disabled={busy} aria-disabled={busy} aria-selected={mode === tab} onPress={() => changeMode(tab)} accessibilityState={{ selected: mode === tab, disabled: busy }} style={({ pressed }) => [styles.tab, { opacity: pressed ? 0.7 : 1, backgroundColor: mode === tab ? palette.selected : `transparent` }]}>
-                {tab === `signin` ? <LogIn {...elementProps(`auth-signin-tab-icon`, `${scope}-${tab}`)} size={17} color={mode === tab ? palette.blue : palette.muted} /> : <UserPlus {...elementProps(`auth-signup-tab-icon`, `${scope}-${tab}`)} size={17} color={mode === tab ? palette.blue : palette.muted} />}
-                <Text {...elementProps(`auth-tab-label`, `${scope}-${tab}`)} style={[styles.tabLabel, { color: mode === tab ? palette.blue : palette.muted }]}>{tab === `signin` ? `Sign In` : `Sign Up`}</Text>
+              <Pressable
+                {...elementProps(`auth-tab`, `${scope}-${tab}`)}
+                key={tab}
+                accessibilityRole={`tab`}
+                disabled={busy}
+                aria-disabled={busy}
+                aria-selected={mode === tab}
+                onPress={() => changeMode(tab)}
+                accessibilityState={{ selected: mode === tab, disabled: busy }}
+                style={({ pressed }) => [styles.tab, { opacity: pressed ? 0.7 : 1, backgroundColor: mode === tab ? palette.selected : `transparent` }]}
+              >
+                {tab === `signin` ? (
+                  <LogIn
+                    {...elementProps(`auth-signin-tab-icon`, `${scope}-${tab}`)}
+                    size={17}
+                    color={mode === tab ? palette.blue : palette.muted}
+                  />
+                ) : (
+                  <UserPlus
+                    {...elementProps(`auth-signup-tab-icon`, `${scope}-${tab}`)}
+                    size={17}
+                    color={mode === tab ? palette.blue : palette.muted}
+                  />
+                )}
+                <Text
+                  {...elementProps(`auth-tab-label`, `${scope}-${tab}`)}
+                  style={[styles.tabLabel, { color: mode === tab ? palette.blue : palette.muted }]}
+                >
+                  {tab === `signin` ? `Sign In` : `Sign Up`}
+                </Text>
               </Pressable>
             ))}
           </View>
           {signingUp ? (
-            <View {...elementProps(`auth-username-field`, scope)} style={styles.field}>
-              <Text {...elementProps(`auth-username-label`, scope)} style={[styles.label, { color: palette.text }]}>Username</Text>
-              <TextInput {...elementProps(`auth-username-input`, scope)} value={username} maxLength={40} editable={!busy} autoCorrect={false} autoComplete={`username`} autoCapitalize={`none`} accessibilityLabel={`Username`} returnKeyType={`next`} submitBehavior={`submit`} keyboardAppearance={dark ? `dark` : `light`} onChangeText={setUsername} onSubmitEditing={() => emailInput.current?.focus()} placeholder={`Your name`} placeholderTextColor={palette.faint} selectionColor={palette.blue} style={inputStyle} />
+            <View
+              {...elementProps(`auth-username-field`, scope)}
+              style={styles.field}
+            >
+              <Text
+                {...elementProps(`auth-username-label`, scope)}
+                style={[styles.label, { color: palette.text }]}
+              >
+                Username
+              </Text>
+              <TextInput
+                {...elementProps(`auth-username-input`, scope)}
+                value={username}
+                maxLength={40}
+                editable={!busy}
+                autoCorrect={false}
+                autoComplete={`username`}
+                autoCapitalize={`none`}
+                accessibilityLabel={`Username`}
+                returnKeyType={`next`}
+                submitBehavior={`submit`}
+                keyboardAppearance={dark ? `dark` : `light`}
+                onChangeText={setUsername}
+                onSubmitEditing={() => emailInput.current?.focus()}
+                placeholder={`Your name`}
+                placeholderTextColor={palette.faint}
+                selectionColor={palette.blue}
+                style={inputStyle}
+              />
             </View>
           ) : null}
-          <View {...elementProps(`auth-email-field`, scope)} style={styles.field}>
-            <Text {...elementProps(`auth-email-label`, scope)} style={[styles.label, { color: palette.text }]}>Email</Text>
-            <TextInput {...elementProps(`auth-email-input`, scope)} ref={emailInput} value={email} maxLength={254} editable={!busy} autoCorrect={false} autoComplete={`email`} autoCapitalize={`none`} keyboardType={`email-address`} accessibilityLabel={`Email`} returnKeyType={`next`} submitBehavior={`submit`} keyboardAppearance={dark ? `dark` : `light`} onChangeText={setEmail} onSubmitEditing={() => passwordInput.current?.focus()} placeholder={`you@example.com`} placeholderTextColor={palette.faint} selectionColor={palette.blue} style={inputStyle} />
+          <View
+            {...elementProps(`auth-email-field`, scope)}
+            style={styles.field}
+          >
+            <Text
+              {...elementProps(`auth-email-label`, scope)}
+              style={[styles.label, { color: palette.text }]}
+            >
+              Email
+            </Text>
+            <TextInput
+              {...elementProps(`auth-email-input`, scope)}
+              ref={emailInput}
+              value={email}
+              maxLength={254}
+              editable={!busy}
+              autoCorrect={false}
+              autoComplete={`email`}
+              autoCapitalize={`none`}
+              keyboardType={`email-address`}
+              accessibilityLabel={`Email`}
+              returnKeyType={`next`}
+              submitBehavior={`submit`}
+              keyboardAppearance={dark ? `dark` : `light`}
+              onChangeText={setEmail}
+              onSubmitEditing={() => passwordInput.current?.focus()}
+              placeholder={`you@example.com`}
+              placeholderTextColor={palette.faint}
+              selectionColor={palette.blue}
+              style={inputStyle}
+            />
           </View>
-          <View {...elementProps(`auth-password-field`, scope)} style={styles.field}>
-            <Text {...elementProps(`auth-password-label`, scope)} style={[styles.label, { color: palette.text }]}>Password</Text>
-            <View {...elementProps(`auth-password-input-wrap`, scope)} style={styles.passwordField}>
-              <TextInput {...elementProps(`auth-password-input`, scope)} ref={passwordInput} value={password} maxLength={128} editable={!busy} autoCorrect={false} autoCapitalize={`none`} accessibilityLabel={`Password`} returnKeyType={`done`} autoComplete={signingUp ? `new-password` : `current-password`} secureTextEntry={!showPassword} keyboardAppearance={dark ? `dark` : `light`} onChangeText={setPassword} onSubmitEditing={submit} placeholder={signingUp ? `At least 8 characters` : `Your password`} placeholderTextColor={palette.faint} selectionColor={palette.blue} style={[inputStyle, styles.passwordInput]} />
-              <Pressable {...elementProps(`auth-password-toggle`, scope)} accessibilityRole={`button`} disabled={busy} accessibilityLabel={showPassword ? `Hide Password` : `Show Password`} onPress={() => setShowPassword((value) => !value)} style={styles.passwordToggle}>
-                {showPassword ? <EyeOff {...elementProps(`auth-password-hide-icon`, scope)} size={20} color={palette.muted} strokeWidth={1.8} /> : <Eye {...elementProps(`auth-password-show-icon`, scope)} size={20} color={palette.muted} strokeWidth={1.8} />}
+          <View
+            {...elementProps(`auth-password-field`, scope)}
+            style={styles.field}
+          >
+            <Text
+              {...elementProps(`auth-password-label`, scope)}
+              style={[styles.label, { color: palette.text }]}
+            >
+              Password
+            </Text>
+            <View
+              {...elementProps(`auth-password-input-wrap`, scope)}
+              style={styles.passwordField}
+            >
+              <TextInput
+                {...elementProps(`auth-password-input`, scope)}
+                ref={passwordInput}
+                value={password}
+                maxLength={128}
+                editable={!busy}
+                autoCorrect={false}
+                autoCapitalize={`none`}
+                accessibilityLabel={`Password`}
+                returnKeyType={`done`}
+                autoComplete={signingUp ? `new-password` : `current-password`}
+                secureTextEntry={!showPassword}
+                keyboardAppearance={dark ? `dark` : `light`}
+                onChangeText={setPassword}
+                onSubmitEditing={submit}
+                placeholder={signingUp ? `At least 8 characters` : `Your password`}
+                placeholderTextColor={palette.faint}
+                selectionColor={palette.blue}
+                style={[inputStyle, styles.passwordInput]}
+              />
+              <Pressable
+                {...elementProps(`auth-password-toggle`, scope)}
+                accessibilityRole={`button`}
+                disabled={busy}
+                accessibilityLabel={showPassword ? `Hide Password` : `Show Password`}
+                onPress={() => setShowPassword((value) => !value)}
+                style={styles.passwordToggle}
+              >
+                {showPassword ? (
+                  <EyeOff
+                    {...elementProps(`auth-password-hide-icon`, scope)}
+                    size={20}
+                    color={palette.muted}
+                    strokeWidth={1.8}
+                  />
+                ) : (
+                  <Eye
+                    {...elementProps(`auth-password-show-icon`, scope)}
+                    size={20}
+                    color={palette.muted}
+                    strokeWidth={1.8}
+                  />
+                )}
               </Pressable>
             </View>
           </View>
         </View>
       )}
-      {error ? <Text {...elementProps(`auth-error`, scope)} accessibilityRole={`alert`} accessibilityLiveRegion={`polite`} style={[styles.error, { color: palette.red }]}>{error}</Text> : null}
-      <Pressable {...elementProps(`auth-submit`, scope)} accessibilityRole={`button`} disabled={busy} aria-busy={busy} aria-disabled={busy} accessibilityState={{ busy, disabled: busy }} onPress={user ? signOut : submit} style={({ pressed }) => [styles.submit, { opacity: busy ? 0.7 : pressed ? 0.85 : 1 }]}>
-        {busy ? <ActivityIndicator {...elementProps(`auth-submit-spinner`, scope)} color={`#FFFFFF`} size={`small`} /> : user ? <LogOut {...elementProps(`auth-signout-icon`, scope)} size={18} color={`#FFFFFF`} /> : signingUp ? <UserPlus {...elementProps(`auth-signup-submit-icon`, scope)} size={18} color={`#FFFFFF`} /> : <LogIn {...elementProps(`auth-signin-submit-icon`, scope)} size={18} color={`#FFFFFF`} />}
-        <Text {...elementProps(`auth-submit-label`, scope)} style={styles.submitLabel}>{busy ? `Please Wait…` : user ? `Sign Out` : signingUp ? `Create Account` : `Sign In`}</Text>
+      {error ? (
+        <Text
+          {...elementProps(`auth-error`, scope)}
+          accessibilityRole={`alert`}
+          accessibilityLiveRegion={`polite`}
+          style={[styles.error, { color: palette.red }]}
+        >
+          {error}
+        </Text>
+      ) : null}
+      <Pressable
+        {...elementProps(`auth-submit`, scope)}
+        accessibilityRole={`button`}
+        disabled={busy}
+        aria-busy={busy}
+        aria-disabled={busy}
+        accessibilityState={{ busy, disabled: busy }}
+        onPress={user ? signOut : submit}
+        style={({ pressed }) => [styles.submit, { opacity: busy ? 0.7 : pressed ? 0.85 : 1 }]}
+      >
+        {busy ? (
+          <ActivityIndicator
+            {...elementProps(`auth-submit-spinner`, scope)}
+            color={`#FFFFFF`}
+            size={`small`}
+          />
+        ) : user ? (
+          <LogOut
+            {...elementProps(`auth-signout-icon`, scope)}
+            size={18}
+            color={`#FFFFFF`}
+          />
+        ) : signingUp ? (
+          <UserPlus
+            {...elementProps(`auth-signup-submit-icon`, scope)}
+            size={18}
+            color={`#FFFFFF`}
+          />
+        ) : (
+          <LogIn
+            {...elementProps(`auth-signin-submit-icon`, scope)}
+            size={18}
+            color={`#FFFFFF`}
+          />
+        )}
+        <Text
+          {...elementProps(`auth-submit-label`, scope)}
+          style={styles.submitLabel}
+        >
+          {busy ? `Please Wait…` : user ? `Sign Out` : signingUp ? `Create Account` : `Sign In`}
+        </Text>
       </Pressable>
-      <View {...elementProps(`auth-local-note`, scope)} style={[styles.localNote, { borderColor: palette.border }]}>
-        <ShieldCheck {...elementProps(`auth-local-note-icon`, scope)} size={18} color={palette.muted} strokeWidth={1.7} />
-        <View {...elementProps(`auth-local-note-copy`, scope)} style={styles.noteCopy}>
-          <Text {...elementProps(`auth-local-note-title`, scope)} style={[styles.noteTitle, { color: palette.muted }]}>Accounts Stay On This Device</Text>
-          <Text {...elementProps(`auth-local-note-description`, scope)} style={[styles.noteBody, { color: palette.faint }]}>Your account is stored in this browser or app. It does not sync to other devices.</Text>
+      <View
+        {...elementProps(`auth-local-note`, scope)}
+        style={[styles.localNote, { borderColor: palette.border }]}
+      >
+        <ShieldCheck
+          {...elementProps(`auth-local-note-icon`, scope)}
+          size={18}
+          color={palette.muted}
+          strokeWidth={1.7}
+        />
+        <View
+          {...elementProps(`auth-local-note-copy`, scope)}
+          style={styles.noteCopy}
+        >
+          <Text
+            {...elementProps(`auth-local-note-title`, scope)}
+            style={[styles.noteTitle, { color: palette.muted }]}
+          >
+            Accounts Stay On This Device
+          </Text>
+          <Text
+            {...elementProps(`auth-local-note-description`, scope)}
+            style={[styles.noteBody, { color: palette.faint }]}
+          >
+            Your account is stored in this browser or app. It does not sync to other devices.
+          </Text>
         </View>
       </View>
     </ModalShell>

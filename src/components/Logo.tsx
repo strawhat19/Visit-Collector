@@ -28,7 +28,15 @@ const Logo = ({ id, size = 36 }: { id?: string; size?: number }) => {
   const generatedId = useId();
   const scope = (id ?? generatedId).replace(/[^a-zA-Z0-9_-]/g, ``) || generatedId.replace(/[^a-zA-Z0-9_-]/g, ``);
   const xml = useMemo(() => logoXml(`visit-collector-logo-${scope}`), [scope]);
-  return <SvgXml {...elementProps(`visit-collector-logo`, scope)} xml={xml} width={size} height={size} accessibilityLabel={`Visit Collector Logo`} />;
+  return (
+    <SvgXml
+      {...elementProps(`visit-collector-logo`, scope)}
+      xml={xml}
+      width={size}
+      height={size}
+      accessibilityLabel={`Visit Collector Logo`}
+    />
+  );
 };
 
 export default Logo;

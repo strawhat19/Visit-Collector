@@ -14,6 +14,7 @@ type PreferencesDialogProps = {
   preferences: Preferences;
   reducedMotion?: boolean;
   onClearHistory: () => Promise<void>;
+  onResetLocalData: () => Promise<void>;
   onModeChange: (mode: DataMode) => Promise<void>;
   onChange: (patch: Partial<Preferences>) => Promise<void>;
 };
@@ -37,24 +38,59 @@ const appearanceOptions = [
 const ToggleRow = ({ Icon, label, value, palette, disabled, description, onChange }: ToggleRowProps) => {
   const scope = useId();
   return (
-  <View {...elementProps(`preferences-toggle`, scope)} style={styles.settingRow}>
-    <Icon {...elementProps(`preferences-toggle-icon`, scope)} size={20} color={palette.muted} strokeWidth={1.8} />
-    <View {...elementProps(`preferences-toggle-copy`, scope)} style={styles.rowCopy}>
-      <Text {...elementProps(`preferences-toggle-label`, scope)} style={[styles.rowLabel, { color: palette.text }]}>{label}</Text>
-      <Text {...elementProps(`preferences-toggle-description`, scope)} style={[styles.description, { color: palette.muted }]}>{description}</Text>
+    <View
+      {...elementProps(`preferences-toggle`, scope)}
+      style={styles.settingRow}
+    >
+      <Icon
+        {...elementProps(`preferences-toggle-icon`, scope)}
+        size={20}
+        color={palette.muted}
+        strokeWidth={1.8}
+      />
+      <View
+        {...elementProps(`preferences-toggle-copy`, scope)}
+        style={styles.rowCopy}
+      >
+        <Text
+          {...elementProps(`preferences-toggle-label`, scope)}
+          style={[styles.rowLabel, { color: palette.text }]}
+        >
+          {label}
+        </Text>
+        <Text
+          {...elementProps(`preferences-toggle-description`, scope)}
+          style={[styles.description, { color: palette.muted }]}
+        >
+          {description}
+        </Text>
+      </View>
+      <Switch
+        {...elementProps(`preferences-toggle-switch`, scope)}
+        value={value}
+        hitSlop={8}
+        disabled={disabled}
+        aria-checked={value}
+        aria-disabled={disabled}
+        onValueChange={onChange}
+        accessibilityLabel={label}
+        accessibilityHint={description}
+        thumbColor={`#FFFFFF`}
+        trackColor={{ false: palette.faint, true: `#2563EB` }}
+        ios_backgroundColor={palette.faint}
+      />
     </View>
-    <Switch {...elementProps(`preferences-toggle-switch`, scope)} value={value} hitSlop={8} disabled={disabled} aria-checked={value} aria-disabled={disabled} onValueChange={onChange} accessibilityLabel={label} accessibilityHint={description} thumbColor={`#FFFFFF`} trackColor={{ false: palette.faint, true: `#2563EB` }} ios_backgroundColor={palette.faint} />
-  </View>
   );
 };
 
-const PreferencesDialog = ({ mode, visible, palette, onClose, onChange, preferences, onModeChange, onClearHistory, reducedMotion = preferences.reducedMotion }: PreferencesDialogProps) => {
+const PreferencesDialog = ({ mode, visible, palette, onClose, onChange, preferences, onModeChange, onClearHistory, onResetLocalData, reducedMotion = preferences.reducedMotion }: PreferencesDialogProps) => {
   const scope = useId();
   const working = useRef(false);
   const [error, setError] = useState(``);
   const [notice, setNotice] = useState(``);
   const [pending, setPending] = useState(``);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const busy = Boolean(pending);
 
   useEffect(() => {
@@ -62,6 +98,7 @@ const PreferencesDialog = ({ mode, visible, palette, onClose, onChange, preferen
     setError(``);
     setNotice(``);
     setConfirmClear(false);
+    setConfirmReset(false);
   }, [visible]);
 
   const save = async (key: string, action: () => Promise<void>) => {
@@ -76,6 +113,10 @@ const PreferencesDialog = ({ mode, visible, palette, onClose, onChange, preferen
         setConfirmClear(false);
         setNotice(`Visit History Cleared`);
       }
+      if (key === `local-data`) {
+        setConfirmReset(false);
+        setNotice(`Local Data Cleared`);
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : `Unable To Save. Please Try Again`);
     } finally {
@@ -85,69 +126,365 @@ const PreferencesDialog = ({ mode, visible, palette, onClose, onChange, preferen
   };
 
   return (
-    <ModalShell title={`Preferences`} visible={visible} palette={palette} onClose={onClose} maxWidth={520} dismissible={!busy} reducedMotion={reducedMotion} description={`Make Visit Collector feel like yours`}>
-      <View {...elementProps(`preferences-appearance`, scope)} style={styles.section}>
-        <Text {...elementProps(`preferences-appearance-title`, scope)} style={[styles.sectionTitle, { color: palette.text }]}>Appearance</Text>
-        <View {...elementProps(`preferences-appearance-options`, scope)} accessibilityRole={`radiogroup`} style={styles.options}>
+    <ModalShell
+      title={`Preferences`}
+      visible={visible}
+      palette={palette}
+      onClose={onClose}
+      maxWidth={520}
+      dismissible={!busy}
+      reducedMotion={reducedMotion}
+      description={`Make Visit Collector feel like yours`}
+    >
+      <View
+        {...elementProps(`preferences-appearance`, scope)}
+        style={styles.section}
+      >
+        <Text
+          {...elementProps(`preferences-appearance-title`, scope)}
+          style={[styles.sectionTitle, { color: palette.text }]}
+        >
+          Appearance
+        </Text>
+        <View
+          {...elementProps(`preferences-appearance-options`, scope)}
+          accessibilityRole={`radiogroup`}
+          style={styles.options}
+        >
           {appearanceOptions.map(({ value, label, Icon }) => (
-            <Pressable {...elementProps(`preferences-appearance-option`, `${scope}-${value}`)} key={value} disabled={busy} aria-disabled={busy} aria-checked={preferences.theme === value} accessibilityRole={`radio`} accessibilityLabel={`${label} Appearance`} accessibilityState={{ checked: preferences.theme === value, disabled: busy }} onPress={() => save(`theme`, () => onChange({ theme: value }))} style={({ pressed }) => [styles.appearance, { opacity: busy ? 0.65 : pressed ? 0.75 : 1, borderColor: preferences.theme === value ? palette.blue : palette.border, backgroundColor: preferences.theme === value ? palette.selected : palette.input }]}>
-              <Icon {...elementProps(`preferences-appearance-icon`, `${scope}-${value}`)} size={20} color={preferences.theme === value ? palette.blue : palette.muted} strokeWidth={1.8} />
-              <Text {...elementProps(`preferences-appearance-label`, `${scope}-${value}`)} style={[styles.optionLabel, { color: preferences.theme === value ? palette.blue : palette.text }]}>{label}</Text>
+            <Pressable
+              {...elementProps(`preferences-appearance-option`, `${scope}-${value}`)}
+              key={value}
+              disabled={busy}
+              aria-disabled={busy}
+              aria-checked={preferences.theme === value}
+              accessibilityRole={`radio`}
+              accessibilityLabel={`${label} Appearance`}
+              accessibilityState={{ checked: preferences.theme === value, disabled: busy }}
+              onPress={() => save(`theme`, () => onChange({ theme: value }))}
+              style={({ pressed }) => [styles.appearance, { opacity: busy ? 0.65 : pressed ? 0.75 : 1, borderColor: preferences.theme === value ? palette.blue : palette.border, backgroundColor: preferences.theme === value ? palette.selected : palette.input }]}
+            >
+              <Icon
+                {...elementProps(`preferences-appearance-icon`, `${scope}-${value}`)}
+                size={20}
+                color={preferences.theme === value ? palette.blue : palette.muted}
+                strokeWidth={1.8}
+              />
+              <Text
+                {...elementProps(`preferences-appearance-label`, `${scope}-${value}`)}
+                style={[styles.optionLabel, { color: preferences.theme === value ? palette.blue : palette.text }]}
+              >
+                {label}
+              </Text>
             </Pressable>
           ))}
         </View>
       </View>
-      <View {...elementProps(`preferences-settings`, scope)} style={[styles.settings, { borderColor: palette.border }]}>
-        <ToggleRow Icon={Vibrate} palette={palette} disabled={busy} label={`Haptic Feedback`} value={preferences.haptics} description={`A subtle tap on supported devices`} onChange={(haptics) => save(`haptics`, () => onChange({ haptics }))} />
-        <View {...elementProps(`preferences-haptics-divider`, scope)} style={[styles.divider, { backgroundColor: palette.border }]} />
-        <ToggleRow Icon={Waves} palette={palette} disabled={busy} label={`Reduce Motion`} value={preferences.reducedMotion} description={`Keep charts and transitions still`} onChange={(reducedMotion) => save(`motion`, () => onChange({ reducedMotion }))} />
-        <View {...elementProps(`preferences-motion-divider`, scope)} style={[styles.divider, { backgroundColor: palette.border }]} />
-        <View {...elementProps(`preferences-push-row`, scope)} style={styles.settingRow}>
-          <BellOff {...elementProps(`preferences-push-icon`, scope)} size={20} color={palette.faint} strokeWidth={1.8} />
-          <View {...elementProps(`preferences-push-copy`, scope)} style={styles.rowCopy}>
-            <Text {...elementProps(`preferences-push-title`, scope)} style={[styles.rowLabel, { color: palette.muted }]}>Push Notifications</Text>
-            <Text {...elementProps(`preferences-push-description`, scope)} style={[styles.description, { color: palette.muted }]}>Visitor alerts are planned for a future update</Text>
+      <View
+        {...elementProps(`preferences-settings`, scope)}
+        style={[styles.settings, { borderColor: palette.border }]}
+      >
+        <ToggleRow
+          Icon={Vibrate}
+          palette={palette}
+          disabled={busy}
+          label={`Haptic Feedback`}
+          value={preferences.haptics}
+          description={`A subtle tap on supported devices`}
+          onChange={(haptics) => save(`haptics`, () => onChange({ haptics }))}
+        />
+        <View
+          {...elementProps(`preferences-haptics-divider`, scope)}
+          style={[styles.divider, { backgroundColor: palette.border }]}
+        />
+        <ToggleRow
+          Icon={Waves}
+          palette={palette}
+          disabled={busy}
+          label={`Reduce Motion`}
+          value={preferences.reducedMotion}
+          description={`Keep charts and transitions still`}
+          onChange={(reducedMotion) => save(`motion`, () => onChange({ reducedMotion }))}
+        />
+        <View
+          {...elementProps(`preferences-motion-divider`, scope)}
+          style={[styles.divider, { backgroundColor: palette.border }]}
+        />
+        <View
+          {...elementProps(`preferences-push-row`, scope)}
+          style={styles.settingRow}
+        >
+          <BellOff
+            {...elementProps(`preferences-push-icon`, scope)}
+            size={20}
+            color={palette.faint}
+            strokeWidth={1.8}
+          />
+          <View
+            {...elementProps(`preferences-push-copy`, scope)}
+            style={styles.rowCopy}
+          >
+            <Text
+              {...elementProps(`preferences-push-title`, scope)}
+              style={[styles.rowLabel, { color: palette.muted }]}
+            >
+              Push Notifications
+            </Text>
+            <Text
+              {...elementProps(`preferences-push-description`, scope)}
+              style={[styles.description, { color: palette.muted }]}
+            >
+              Visitor alerts are planned for a future update
+            </Text>
           </View>
-          <View {...elementProps(`preferences-push-badge`, scope)} accessibilityLabel={`Push Notifications Planned`} style={[styles.planned, { backgroundColor: palette.raised }]}><Text {...elementProps(`preferences-push-badge-label`, scope)} style={[styles.plannedLabel, { color: palette.muted }]}>Planned</Text></View>
+          <View
+            {...elementProps(`preferences-push-badge`, scope)}
+            accessibilityLabel={`Push Notifications Planned`}
+            style={[styles.planned, { backgroundColor: palette.raised }]}
+          >
+            <Text
+              {...elementProps(`preferences-push-badge-label`, scope)}
+              style={[styles.plannedLabel, { color: palette.muted }]}
+            >
+              Planned
+            </Text>
+          </View>
         </View>
       </View>
-      <View {...elementProps(`preferences-data-source`, scope)} style={styles.section}>
-        <Text {...elementProps(`preferences-data-title`, scope)} style={[styles.sectionTitle, { color: palette.text }]}>Data Source</Text>
-        <View {...elementProps(`preferences-data-options`, scope)} accessibilityRole={`radiogroup`} style={styles.options}>
+      <View
+        {...elementProps(`preferences-data-source`, scope)}
+        style={styles.section}
+      >
+        <Text
+          {...elementProps(`preferences-data-title`, scope)}
+          style={[styles.sectionTitle, { color: palette.text }]}
+        >
+          Data Source
+        </Text>
+        <View
+          {...elementProps(`preferences-data-options`, scope)}
+          accessibilityRole={`radiogroup`}
+          style={styles.options}
+        >
           {([{ value: `local`, label: `This Device` }, { value: `demo`, label: `Demo` }] as const).map(({ value, label }) => (
-            <Pressable {...elementProps(`preferences-data-option`, `${scope}-${value}`)} key={value} disabled={busy} aria-disabled={busy} aria-checked={mode === value} accessibilityRole={`radio`} accessibilityLabel={label} accessibilityState={{ checked: mode === value, disabled: busy }} onPress={() => save(`mode`, () => onModeChange(value))} style={({ pressed }) => [styles.dataOption, { opacity: busy ? 0.65 : pressed ? 0.75 : 1, borderColor: mode === value ? palette.blue : palette.border, backgroundColor: mode === value ? palette.selected : palette.input }]}>
-              {value === `local` ? <HardDrive {...elementProps(`preferences-local-data-icon`, `${scope}-${value}`)} size={17} color={mode === value ? palette.blue : palette.text} /> : <Radio {...elementProps(`preferences-demo-data-icon`, `${scope}-${value}`)} size={17} color={mode === value ? palette.blue : palette.text} />}
-              <Text {...elementProps(`preferences-data-label`, `${scope}-${value}`)} style={[styles.optionLabel, { color: mode === value ? palette.blue : palette.text }]}>{label}</Text>
+            <Pressable
+              {...elementProps(`preferences-data-option`, `${scope}-${value}`)}
+              key={value}
+              disabled={busy}
+              aria-disabled={busy}
+              aria-checked={mode === value}
+              accessibilityRole={`radio`}
+              accessibilityLabel={label}
+              accessibilityState={{ checked: mode === value, disabled: busy }}
+              onPress={() => save(`mode`, () => onModeChange(value))}
+              style={({ pressed }) => [styles.dataOption, { opacity: busy ? 0.65 : pressed ? 0.75 : 1, borderColor: mode === value ? palette.blue : palette.border, backgroundColor: mode === value ? palette.selected : palette.input }]}
+            >
+              {value === `local` ? (
+                <HardDrive
+                  {...elementProps(`preferences-local-data-icon`, `${scope}-${value}`)}
+                  size={17}
+                  color={mode === value ? palette.blue : palette.text}
+                />
+              ) : (
+                <Radio
+                  {...elementProps(`preferences-demo-data-icon`, `${scope}-${value}`)}
+                  size={17}
+                  color={mode === value ? palette.blue : palette.text}
+                />
+              )}
+              <Text
+                {...elementProps(`preferences-data-label`, `${scope}-${value}`)}
+                style={[styles.optionLabel, { color: mode === value ? palette.blue : palette.text }]}
+              >
+                {label}
+              </Text>
             </Pressable>
           ))}
         </View>
-        <Text {...elementProps(`preferences-data-description`, scope)} style={[styles.description, { color: palette.muted }]}>{mode === `local` ? `Visits recorded in this browser or app. Data stays on this device.` : `Illustrative activity to explore the dashboard. Demo visits are not real traffic.`}</Text>
+        <Text
+          {...elementProps(`preferences-data-description`, scope)}
+          style={[styles.description, { color: palette.muted }]}
+        >
+          {mode === `local` ? `Visits are stored on this device and synced to your API when connected.` : `Illustrative activity to explore the dashboard. Demo visits are not real traffic.`}
+        </Text>
       </View>
-      <View {...elementProps(`preferences-history`, scope)} style={[styles.history, { borderTopColor: palette.border }]}>
-        {confirmClear ? (
-          <View {...elementProps(`preferences-clear-confirmation`, scope)} style={styles.section}>
-            <Text {...elementProps(`preferences-history-title`, scope)} style={[styles.sectionTitle, { color: palette.text }]}>Clear Visit History?</Text>
-            <Text {...elementProps(`preferences-history-description`, scope)} style={[styles.description, { color: palette.muted }]}>This removes recorded visits from this device. Your account and preferences stay. This cannot be undone.</Text>
-            <View {...elementProps(`preferences-history-actions`, scope)} style={styles.options}>
-              <Pressable {...elementProps(`preferences-keep-history`, scope)} accessibilityRole={`button`} disabled={busy} onPress={() => setConfirmClear(false)} style={({ pressed }) => [styles.dataOption, { opacity: busy ? 0.6 : pressed ? 0.75 : 1, borderColor: palette.border, backgroundColor: palette.input }]}>
-                <History {...elementProps(`preferences-keep-icon`, scope)} size={17} color={palette.text} />
-                <Text {...elementProps(`preferences-keep-label`, scope)} style={[styles.optionLabel, { color: palette.text }]}>Keep History</Text>
+      <View
+        {...elementProps(`preferences-history`, scope)}
+        style={[styles.history, { borderTopColor: palette.border }]}
+      >
+        {confirmClear || confirmReset ? (
+          <View
+            {...elementProps(`preferences-clear-confirmation`, scope)}
+            style={styles.section}
+          >
+            <Text
+              {...elementProps(`preferences-history-title`, scope)}
+              style={[styles.sectionTitle, { color: palette.text }]}
+            >
+              {confirmReset ? `Clear Local Data?` : `Clear Visit History?`}
+            </Text>
+            <Text
+              {...elementProps(`preferences-history-description`, scope)}
+              style={[styles.description, { color: palette.muted }]}
+            >
+              {confirmReset ? `This clears Visit Collector visits, local accounts, saved locations and preferences on this device. Other apps are unaffected. This cannot be undone.` : `This removes recorded visits from this device. Your account and preferences stay. This cannot be undone.`}
+            </Text>
+            <View
+              {...elementProps(`preferences-history-actions`, scope)}
+              style={styles.options}
+            >
+              <Pressable
+                {...elementProps(`preferences-keep-history`, scope)}
+                accessibilityRole={`button`}
+                disabled={busy}
+                onPress={() => {
+                  setConfirmClear(false);
+                  setConfirmReset(false);
+                }}
+                style={({ pressed }) => [styles.dataOption, { opacity: busy ? 0.6 : pressed ? 0.75 : 1, borderColor: palette.border, backgroundColor: palette.input }]}
+              >
+                <History
+                  {...elementProps(`preferences-keep-icon`, scope)}
+                  size={17}
+                  color={palette.text}
+                />
+                <Text
+                  {...elementProps(`preferences-keep-label`, scope)}
+                  style={[styles.optionLabel, { color: palette.text }]}
+                >
+                  {confirmReset ? `Keep Local Data` : `Keep History`}
+                </Text>
               </Pressable>
-              <Pressable {...elementProps(`preferences-confirm-clear`, scope)} accessibilityRole={`button`} accessibilityLabel={`Confirm Clear Visit History`} disabled={busy} aria-disabled={busy} aria-busy={pending === `history`} accessibilityState={{ busy: pending === `history`, disabled: busy }} onPress={() => save(`history`, onClearHistory)} style={({ pressed }) => [styles.clearConfirm, { opacity: busy ? 0.7 : pressed ? 0.85 : 1 }]}>
-                {pending === `history` ? <ActivityIndicator {...elementProps(`preferences-clear-spinner`, scope)} color={`#FFFFFF`} size={`small`} /> : <><Trash2 {...elementProps(`preferences-confirm-clear-icon`, scope)} size={17} color={`#FFFFFF`} /><Text {...elementProps(`preferences-confirm-clear-label`, scope)} style={styles.confirmLabel}>Clear History</Text></>}
+              <Pressable
+                {...elementProps(confirmReset ? `preferences-confirm-local-reset` : `preferences-confirm-clear`, scope)}
+                accessibilityRole={`button`}
+                accessibilityLabel={confirmReset ? `Confirm Clear Local Data` : `Confirm Clear Visit History`}
+                disabled={busy}
+                aria-disabled={busy}
+                aria-busy={busy}
+                accessibilityState={{ busy, disabled: busy }}
+                onPress={() => save(confirmReset ? `local-data` : `history`, confirmReset ? onResetLocalData : onClearHistory)}
+                style={({ pressed }) => [styles.clearConfirm, { opacity: busy ? 0.7 : pressed ? 0.85 : 1 }]}
+              >
+                {busy ? (
+                  <ActivityIndicator
+                    {...elementProps(`preferences-clear-spinner`, scope)}
+                    color={`#FFFFFF`}
+                    size={`small`}
+                  />
+                ) : (
+                  <>
+                    <Trash2
+                      {...elementProps(`preferences-confirm-clear-icon`, scope)}
+                      size={17}
+                      color={`#FFFFFF`}
+                    />
+                    <Text
+                      {...elementProps(`preferences-confirm-clear-label`, scope)}
+                      style={styles.confirmLabel}
+                    >
+                      {confirmReset ? `Clear Local Data` : `Clear History`}
+                    </Text>
+                  </>
+                )}
               </Pressable>
             </View>
           </View>
         ) : (
-          <Pressable {...elementProps(`preferences-clear-history`, scope)} accessibilityRole={`button`} disabled={busy} accessibilityState={{ disabled: busy }} onPress={() => { setNotice(``); setConfirmClear(true); }} style={({ pressed }) => [styles.clearButton, { opacity: busy ? 0.6 : pressed ? 0.7 : 1 }]}>
-            <Trash2 {...elementProps(`preferences-clear-icon`, scope)} size={18} color={palette.red} strokeWidth={1.8} />
-            <Text {...elementProps(`preferences-clear-label`, scope)} style={[styles.optionLabel, { color: palette.red }]}>Clear Visit History</Text>
-          </Pressable>
+          <View
+            {...elementProps(`preferences-clear-actions`, scope)}
+          >
+            <Pressable
+              {...elementProps(`preferences-clear-history`, scope)}
+              accessibilityRole={`button`}
+              disabled={busy}
+              accessibilityState={{ disabled: busy }}
+              onPress={() => {
+                setNotice(``);
+                setConfirmReset(false);
+                setConfirmClear(true);
+              }}
+              style={({ pressed }) => [styles.clearButton, { opacity: busy ? 0.6 : pressed ? 0.7 : 1 }]}
+            >
+              <Trash2
+                {...elementProps(`preferences-clear-icon`, scope)}
+                size={18}
+                color={palette.red}
+                strokeWidth={1.8}
+              />
+              <Text
+                {...elementProps(`preferences-clear-label`, scope)}
+                style={[styles.optionLabel, { color: palette.red }]}
+              >
+                Clear Visit History
+              </Text>
+            </Pressable>
+            <Pressable
+              {...elementProps(`preferences-clear-local-data`, scope)}
+              accessibilityRole={`button`}
+              disabled={busy}
+              accessibilityState={{ disabled: busy }}
+              onPress={() => {
+                setNotice(``);
+                setConfirmClear(false);
+                setConfirmReset(true);
+              }}
+              style={({ pressed }) => [styles.clearButton, { opacity: busy ? 0.6 : pressed ? 0.7 : 1 }]}
+            >
+              <HardDrive
+                {...elementProps(`preferences-clear-local-icon`, scope)}
+                size={18}
+                color={palette.red}
+                strokeWidth={1.8}
+              />
+              <Text
+                {...elementProps(`preferences-clear-local-label`, scope)}
+                style={[styles.optionLabel, { color: palette.red }]}
+              >
+                Clear Local Data
+              </Text>
+            </Pressable>
+          </View>
         )}
       </View>
-      {error ? <Text {...elementProps(`preferences-error`, scope)} accessibilityRole={`alert`} accessibilityLiveRegion={`polite`} style={[styles.feedback, { color: palette.red }]}>{error}</Text> : null}
-      {notice ? <Text {...elementProps(`preferences-notice`, scope)} accessibilityLiveRegion={`polite`} style={[styles.feedback, { color: palette.green }]}>{notice}</Text> : null}
-      {busy && pending !== `history` ? <View {...elementProps(`preferences-saving`, scope)} accessibilityLiveRegion={`polite`} style={styles.saving}><ActivityIndicator {...elementProps(`preferences-saving-spinner`, scope)} size={`small`} color={palette.blue} /><Text {...elementProps(`preferences-saving-label`, scope)} style={[styles.description, { color: palette.muted }]}>Saving…</Text></View> : null}
+      {error ? (
+        <Text
+          {...elementProps(`preferences-error`, scope)}
+          accessibilityRole={`alert`}
+          accessibilityLiveRegion={`polite`}
+          style={[styles.feedback, { color: palette.red }]}
+        >
+          {error}
+        </Text>
+      ) : null}
+      {notice ? (
+        <Text
+          {...elementProps(`preferences-notice`, scope)}
+          accessibilityLiveRegion={`polite`}
+          style={[styles.feedback, { color: palette.green }]}
+        >
+          {notice}
+        </Text>
+      ) : null}
+      {busy && pending !== `history` && pending !== `local-data` ? (
+        <View
+          {...elementProps(`preferences-saving`, scope)}
+          accessibilityLiveRegion={`polite`}
+          style={styles.saving}
+        >
+          <ActivityIndicator
+            {...elementProps(`preferences-saving-spinner`, scope)}
+            size={`small`}
+            color={palette.blue}
+          />
+          <Text
+            {...elementProps(`preferences-saving-label`, scope)}
+            style={[styles.description, { color: palette.muted }]}
+          >
+            Saving…
+          </Text>
+        </View>
+      ) : null}
     </ModalShell>
   );
 };

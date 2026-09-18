@@ -33,11 +33,41 @@ npm start
 
 `npm run android` and `npm run ios` ask Expo to open the corresponding development target. Android emulators need the Android SDK; the iOS simulator requires macOS and Xcode. Use a compatible Expo client or configured development build on physical devices. Native rendering, signing, and device behavior still need actual iOS/Android verification.
 
+## Piratechs API
+
+Start the API in a separate terminal from the Expo app:
+
+```sh
+npm run api:dev
+```
+
+Then open or reload the app running with `npm run web`. In local web development it automatically syncs saved visit sessions to port **3001** on the same host (loopback uses `127.0.0.1`). The API cannot read browser localStorage directly; the app sends an allowlisted snapshot after loading or saving visits. Failed requests retry without interrupting local collection.
+
+| Method | Route | Response |
+| --- | --- | --- |
+| GET | `/api/Piratechs/` | API name and visits route |
+| GET | `/api/Piratechs/visits` | JSON array of collected visit sessions, newest first |
+| POST | `/api/Piratechs/visits` | Sync `{ sourceId, visits }`; return the combined visits array |
+
+Open [the local visits API](http://127.0.0.1:3001/api/Piratechs/visits) after opening the app. It returns `[]` until the first sync. Both routes accept a trailing slash. Visits contain `id`, `pages`, `active`, `activeMs`, `lastSeen`, `startedAt`, `source`, `device`, `browser`, `countryCode`, `operatingSystem`, and nullable `ipAddress`. New visits also include optional `entryPath`, `lastPath`, and `metadata`. Paths omit query strings and fragments. Timestamps are Unix milliseconds. IP addresses remain `null` unless already collected; the API does not invent or look them up. Demo data, account credentials, email addresses, and visitor account IDs are excluded.
+
+Visit metadata uses free browser and platform APIs, with optional `client`, `locale`, `display`, `preferences`, `connection`, `hardware`, `page`, `performance`, and `capabilities` groups plus a `capturedAt` timestamp. Availability varies by browser and platform; unsupported values are omitted. Collection does not silently request permissions or call an external data-enrichment service. Both the client and API normalize an allowlist of bounded metadata fields; arbitrary extra properties are discarded, and metadata is limited to 5 KiB per visit. Existing visits without metadata remain valid.
+
+Metadata includes reported browser/OS versions, language(s), time zone, UTC offset, screen and viewport sizes, pixel ratio, appearance/accessibility preferences, connectivity estimates, reported CPU/memory, entry/referrer paths, six UTM campaign fields, navigation/paint timings, transfer sizes, and supported browser features. Page attribution is retained from the session's first capture; other snapshots refresh with activity. Hardware values may be approximate or unavailable ([MDN device memory](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/deviceMemory)). Native builds capture the built-in platform, locale, appearance and display values; web-only fields remain absent.
+
+**Settings → Clear Local Data** resets this device's visits, accounts, locations and preferences, then records a fresh current visit. The API source identifier remains stable so the next successful sync replaces this device's previous snapshot. **Clear Visit History** clears only visits and page events.
+
+Data persists in `.local/visits.json`, which is excluded from Git. Each app installation gets a local source UUID; a sync replaces that source's retained visits, including an empty array when history is cleared. Other sources remain intact. The API keeps up to 500 visits per source and 100 sources, with a 4 MiB request-body limit. Web Locks serialize syncs from same-origin tabs where supported, and each send rereads the latest saved sessions. Browsers without Web Locks use last-arriving snapshot semantics. The dashboard continues to show device-local data.
+
+The API binds to `127.0.0.1:3001` by default. Set `API_PORT` to choose another port, and `API_HOST=0.0.0.0` only when you want it reachable on your LAN. Native apps require `EXPO_PUBLIC_API_BASE_URL`, for example `http://192.168.1.20:3001/api/Piratechs`, using your computer's actual LAN address. Put the Expo variable in `.env.local` and reload Expo after changing it. The same override works for web. Localhost web origins are allowed; for a LAN-hosted web app, set the API process's `API_ALLOWED_ORIGINS` to its exact origin, such as `http://192.168.1.20:8085` (comma-separated for several origins). No authentication service is included in this local API.
+
+The route files use [Vercel's TypeScript function handlers](https://vercel.com/docs/functions/runtimes/node-js#create-a-nodejs-function-in-api), and the SPA rewrite excludes `/api`. Local JSON is for local development; on Vercel, the visits endpoint explicitly returns **503** until its storage adapter is replaced with a shared persistent database. It does not pretend temporary function storage is a database.
+
 ## Data And Accounts
 
 **This Device** records this browser or app's sessions, page views, foreground visit duration, referrer source, device type, browser, and operating system. Dashboard navigation records page events. Local analytics refresh while the app is active; browser tabs on the same origin synchronize through local storage. Session history is capped at 500 entries and activity history at 1,000 events.
 
-Web persists data in `localStorage`; native uses AsyncStorage. There is no backend, cross-device sync, external-site tracking snippet, or shared visitor collection service. Deploying the web app does not combine different visitors' metrics into an owner's dashboard.
+Web persists data in `localStorage`; native uses AsyncStorage. The local Piratechs API receives visit-session snapshots from connected app instances and exposes them as one array. The dashboard still reads this device's storage; it does not yet display the API's combined data. An external-site tracking snippet, shared cloud database, and production account service are not implemented.
 
 **Add Your Location** accepts a name and latitude/longitude, or fills the coordinates after you choose **Use Current Location** and grant foreground location permission. Browser location requires a secure context such as HTTPS or localhost. Manual entry works without permission; the app does not use IP geolocation or background location tracking. Saving adds a persistent marker, assigns it to the current local visit, and remembers the location for future visits under that local account or guest identity. Visits without an assigned location appear as **Unknown Location**. Up to 100 locations can be saved on the device. Saving a location while viewing Demo Data switches to This Device.
 

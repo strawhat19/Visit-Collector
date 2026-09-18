@@ -37,5 +37,3 @@ prefer like this
 </Text>
 
 8. in javascript or typescript or tsx or jsx, always use backticks whenever possible, if not then use single quotes, and double quotes as a last resort.
-
-9. when there is a row with space on the side, and an element below it with space on the side, prefer to put those on the same row if they are related.
