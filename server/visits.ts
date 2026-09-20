@@ -53,7 +53,6 @@ const parseVisit = (value: unknown): ApiVisit => {
     throw new VisitStoreError(`Invalid Visit IP Address`, 400);
   }
   return {
-    ipAddress,
     active: value.active,
     id: text(value.id, `ID`),
     url: optionalUrl(value.url),
@@ -64,6 +63,7 @@ const parseVisit = (value: unknown): ApiVisit => {
     activeMs: number(value.activeMs, `Active Time`),
     lastSeen: number(value.lastSeen, `Last Seen Time`),
     startedAt: number(value.startedAt, `Started Time`),
+    ipAddress: typeof ipAddress === `string` ? ipAddress : null,
     lastPath: optionalPath(value.lastPath, `Last Path`),
     entryPath: optionalPath(value.entryPath, `Entry Path`),
     countryCode: text(value.countryCode, `Country Code`),
