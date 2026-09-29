@@ -1,4 +1,4 @@
-# Visit Collector — AI Instructions
+# AI Instructions
 
 1. When making code changes,
 dont verify or test or build the code, 

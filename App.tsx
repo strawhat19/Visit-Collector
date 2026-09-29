@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import * as Haptics from 'expo-haptics';
 import Logo from './src/components/Logo';
 import { palettes } from './src/ui/theme';
+import { Analytics } from '@vercel/analytics/react';
 import { StatusBar } from 'expo-status-bar';
 import Sidebar from './src/components/Sidebar';
 import { devEnv } from './src/config/environment';
@@ -985,6 +986,7 @@ const App = () => (
     {...elementProps(`app-safe-area-provider`)}
   >
     <Collector />
+    {Platform.OS === `web` && <Analytics />}
   </SafeAreaProvider>
 );
 
